@@ -6,6 +6,9 @@
  * Input filter that enhances oEmbed enabled URL:s with extra content
  */
 
+//TODO: www subdomain independense for *.
+//TODO: delete options on uninstall
+
 /**
  * Implementation of hook_help().
  */
@@ -53,15 +56,39 @@ function oembed_filter($op, $delta = 0, $format = -1, $text = '') {
 }
 
 function _oembed_filter_apply($text, $format) {
+  global $oembed_maxwidth, $oembed_maxheight;
+  $oembed_maxwidth  = intval(variable_get('oembed_maxwidth_'  . $format, ''));
+  $oembed_maxheight = intval(variable_get('oembed_maxheight_' . $format, ''));
   $text = preg_replace_callback("((?:^|\b)(?:http://|https://)[a-zA-Z0-9@:%_+*~#?&=.,/;-]+[a-zA-Z0-9@:%_+*~#&=/;-](?:$|\b)/?)", '_oembed_parse_full_links', $text);
+  unset($oembed_maxwidth, $oembed_maxheight);
   return $text;
 }
 
 function _oembed_filter_settings($format) {
-  return array();
+  $form = array();
+  $form['oembed'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('oEmbed'),
+    '#collapsible' => TRUE,
+  );
+  $form['oembed']['oembed_maxwidth_' . $format] = array(
+    '#type' => 'textfield',
+    '#title' => t('Maximum width of embed'),
+    '#default_value' => variable_get('oembed_maxwidth_' . $format, ''),
+    '#description' => t('The maximum width of an embed, isn\'t respected by all providers'),
+  );
+  $form['oembed']['oembed_maxheight_' . $format] = array(
+    '#type' => 'textfield',
+    '#title' => t('Maximum height of embed'),
+    '#default_value' => variable_get('oembed_maxheight_' . $format, ''),
+    '#description' => t('The maximum height of an embed, isn\'t respected by all providers'),
+  );
+  return $form;
 }
 
 function _oembed_parse_full_links($match) {
+  global $oembed_maxwidth, $oembed_maxheight;
+
   $oembeddable = array(
     'flickr' => array(
       'scheme'   => 'http://*flickr.com/*',
@@ -104,7 +131,14 @@ function _oembed_parse_full_links($match) {
   foreach ($oembeddable as $site) {
     foreach ((array) $site['scheme'] as $scheme) {
       if (preg_match('/' . str_replace('\*', '\S+', preg_quote($scheme, '/')) . '/i', $url)) {
-        $response = @file_get_contents($site['endpoint'] . '?url=' . urlencode($url) . '&maxwidth=175&maxheight=100');
+        $url = $site['endpoint'] . '?url=' . urlencode($url);
+        if ($oembed_maxwidth) {
+          $url .= '&maxwidth=' . $oembed_maxwidth;
+        }
+        if ($oembed_maxheight) {
+          $url .= '&maxheight=' . $oembed_maxheight;
+        }
+        $response = @file_get_contents($url);
         if (!$response) {
           continue;
         }
