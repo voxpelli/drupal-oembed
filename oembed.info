@@ -1,0 +1,4 @@
+name = oEmbed filter
+description = Replaces oEmbed-enabled URL:s with embedded content
+dependencies[] = filter
+core = 6.x

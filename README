@@ -1,1 +1,1 @@
-Drupal module implementing an input filter that replaces oembed enabled URL:s with embeds
+Drupal module implementing an input filter that enhances oEmbed enabled URL:s with data it fetches from the oEmbed providers

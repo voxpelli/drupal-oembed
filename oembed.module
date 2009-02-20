@@ -1,0 +1,144 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Input filter that enhances oEmbed enabled URL:s with extra content
+ */
+
+/**
+ * Implementation of hook_help().
+ */
+function oembed_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#filearchive':
+      return '<p>'. t('Adds an input filter for replacing oEmbed enabled URL:s with embedded content') .'</p>';
+  }
+}
+
+/**
+ * Implementation of hook_filter().
+ */
+function oembed_filter($op, $delta = 0, $format = -1, $text = '') {
+  switch ($op) {
+    case 'list':
+      return array(0 => t('oEmbed filter'));
+    case 'description':
+      switch ($delta) {
+        case 0:
+          return t('Embeds content for oEmbed-enabled web addresses and turns the rest, and e-mail addresses, into clickable links.');
+        default:
+          return;
+      }
+
+    case 'process':
+      switch ($delta) {
+        case 0:
+          return _oembed_filter_apply($text, $format);
+        default:
+          return $text;
+      }
+
+    case 'settings':
+      switch ($delta) {
+        case 0:
+          return _oembed_filter_settings($format);
+        default:
+          return;
+      }
+
+    default:
+      return $text;
+  }
+}
+
+function _oembed_filter_apply($text, $format) {
+  $text = preg_replace_callback("((?:^|\b)(?:http://|https://)[a-zA-Z0-9@:%_+*~#?&=.,/;-]+[a-zA-Z0-9@:%_+*~#&=/;-](?:$|\b)/?)", '_oembed_parse_full_links', $text);
+  return $text;
+}
+
+function _oembed_filter_settings($format) {
+  return array();
+}
+
+function _oembed_parse_full_links($match) {
+  $oembeddable = array(
+    'flickr' => array(
+      'scheme'   => 'http://*flickr.com/*',
+      'endpoint' => 'http://www.flickr.com/services/oembed/',
+    ),
+    'viddler' => array(
+      'scheme'   => 'http://*.viddler.com/*',
+      'endpoint' => 'http://lab.viddler.com/services/oembed/',
+    ),
+    'qik' => array(
+      'scheme'   => array('http://qik.com/video/*', 'http://qik.com/*'),
+      'endpoint' => 'http://qik.com/api/oembed.json',
+    ),
+    'revision3' => array(
+      'scheme'   => 'http://*.revision3.com/*',
+      'endpoint' => 'http://revision3.com/api/oembed/',
+    ),
+    'revision3' => array(
+      'scheme'   => 'http://*.revision3.com/*',
+      'endpoint' => 'http://revision3.com/api/oembed/',
+    ),
+    'vimeo' => array(
+      'scheme'   => array('http://www.vimeo.com/*', 'http://www.vimeo.com/groups/*/*'),
+      'endpoint' => 'http://www.vimeo.com/api/oembed.json',
+    ),
+    'oohembed' => array(
+      'scheme'   => array(
+        'http://*.youtube.com/watch*',
+        'http://*.wikipedia.org/wiki/*',
+        'http://*.slideshare.net/*',
+        'http://*.imdb.com/title/tt*/',
+        'http://*.collegehumor.com/video:*',
+      ),
+      'endpoint' => 'http://oohembed.com/oohembed/',
+    ),
+  );
+
+  $url = decode_entities($match[0]);
+
+  foreach ($oembeddable as $site) {
+    foreach ((array) $site['scheme'] as $scheme) {
+      if (preg_match('/' . str_replace('\*', '\S+', preg_quote($scheme, '/')) . '/i', $url)) {
+        $response = @file_get_contents($site['endpoint'] . '?url=' . urlencode($url) . '&maxwidth=175&maxheight=100');
+        if (!$response) {
+          continue;
+        }
+        $embed = json_decode($response);
+        if (is_string($embed)) {
+          $embed = new SimpleXMLElement($embed);
+        }
+        switch ($embed->type) {
+          case 'photo':
+            $return  = '<span class="oembed">';
+              if (!empty($embed->title)) {
+                $return .= l($embed->title, $match[0], array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title')));
+              }
+              $return .= ' ' . l('<img src="' . check_url($embed->url) . '" />', $match[0], array('html' => TRUE, 'absolute' => TRUE));
+            $return .= '</span>';
+            break;
+          case 'video':
+            $return  = '<span class="oembed">';
+              if (!empty($embed->title)) {
+                $return .= l($embed->title, $match[0], array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title')));
+              }
+              $return .= ' ' . $embed->html;
+            $return .= '</span>';
+            break;
+          case 'link':
+            $return .= l($embed->title, $match[0], array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title')));
+            break;
+          default:
+        }
+      }
+    }
+  }
+  if (!isset($return)) {
+    $return  = l($match[0], $match[0], array('absolute' => TRUE));
+  }
+  return $return;
+}
