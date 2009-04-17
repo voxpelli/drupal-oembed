@@ -10,6 +10,28 @@
 //TODO: delete options on uninstall
 
 /**
+ * Implementation of hook_theme().
+ */
+function oembed_theme() {
+  return array(
+    'oembed_init' => array(
+      'arguments' => array(),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_init().
+ */
+function oembed_init() {
+  theme('oembed_init');
+}
+
+function theme_oembed_init() {
+  drupal_add_css(drupal_get_path('module', 'oembed') . '/oembed.css');
+}
+
+/**
  * Implementation of hook_help().
  */
 function oembed_help($path, $arg) {
@@ -106,10 +128,6 @@ function _oembed_parse_full_links($match) {
       'scheme'   => 'http://*.revision3.com/*',
       'endpoint' => 'http://revision3.com/api/oembed/',
     ),
-    'revision3' => array(
-      'scheme'   => 'http://*.revision3.com/*',
-      'endpoint' => 'http://revision3.com/api/oembed/',
-    ),
     'vimeo' => array(
       'scheme'   => array('http://www.vimeo.com/*', 'http://www.vimeo.com/groups/*/*'),
       'endpoint' => 'http://www.vimeo.com/api/oembed.json',
@@ -152,19 +170,20 @@ function _oembed_parse_full_links($match) {
               if (!empty($embed->title)) {
                 $return .= l($embed->title, $match[0], array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title')));
               }
-              $return .= ' ' . l('<img src="' . check_url($embed->url) . '" />', $match[0], array('html' => TRUE, 'absolute' => TRUE));
+              $return .= ' ' . l('<img src="' . check_url($embed->url) . '" />', $match[0], array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-photo oembed-content')));
             $return .= '</span>';
             break;
+          case 'rich':
           case 'video':
-            $return  = '<span class="oembed">';
+            $return  = '<div class="oembed">';
               if (!empty($embed->title)) {
                 $return .= l($embed->title, $match[0], array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title')));
               }
-              $return .= ' ' . $embed->html;
-            $return .= '</span>';
+              $return .= ' <span class="oembed-content oembed-' . ($embed->type == 'video' ? 'video' : 'rich') . '">' . $embed->html . '</span>';
+            $return .= '</div>';
             break;
           case 'link':
-            $return .= l($embed->title, $match[0], array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title')));
+            $return .= l($embed->title, $match[0], array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title oembed-link')));
             break;
           default:
         }
