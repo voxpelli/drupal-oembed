@@ -1,0 +1,213 @@
+<?php
+
+/**
+ * Implementation of hook_menu().
+ */
+function oembedprovider_menu() {
+  $menu = array();
+
+  $handler = array(
+    'type' => MENU_CALLBACK,
+    'page callback' => '_oembedprovider_handle_request',
+    'page arguments' => array(2),
+    'access arguments' => array('access content'),
+  );
+
+  $menu['oembed/endpoint'] = $menu['oembed/endpoint/%'] = $handler;
+
+  return $menu;
+}
+
+/**
+ * Implementation of hook_oembedprovider().
+ *
+ * @return array
+ */
+function oembedprovider_oembedprovider() {
+  $base_url = url('', array('absolute' => TRUE)) . 'node/*';
+  $events_url = url('', array('absolute' => TRUE)) . 'events/*';
+  return array(
+    $base_url => '_oembedprovider_teaser_provider',
+    $events_url => '_oembedprovider_teaser_provider',
+  );
+}
+
+/**
+ * Returns all the registered providers, or the providers for a specific host.
+ *
+ * @param string $host
+ *  Optional. Supply a hostname if you only want the provider patterns for a specific host.
+ * @return array
+ */
+function oembedprovider_providers($host=NULL) {
+  static $providers;
+
+  if (!$providers) {
+    $cache_key = 'oembedprovider:providers';
+
+    if (!$reset && ($cache = cache_get($cache_key)) && isset($cache->data)) {
+      $providers = $cache->data;
+    }
+    else {
+      $providers = array();
+      $modules = module_implements('oembedprovider');
+      foreach ($modules as $module) {
+        $ps = call_user_func($module . '_oembedprovider');
+        foreach ($ps as $pattern => $callback) {
+          $host = _oembedprovider_get_host($pattern);
+          $regex_pattern = '/' . str_replace('\*', '(.+)', preg_quote($pattern, '/')) . '/';
+          $providers[$host][$regex_pattern] = $callback;
+        }
+      }
+      foreach ($providers as $host => &$patterns) {
+        uksort($patterns, '_oembedprovider_specificity_compare');
+      }
+    }
+
+    cache_set($cache_key, $providers);
+  }
+
+  if ($host) {
+    return isset($providers[$host]) ? $providers[$host] : array();
+  }
+  return $providers;
+}
+
+/**
+ * Helper function that compares the length of match expressions.
+ */
+function _oembedprovider_specificity_compare($a, $b) {
+  return strlen($b) - strlen($a);
+}
+
+/**
+ * Returns all the registered response formats
+ *
+ * @return array
+ */
+function oembedprovider_formats() {
+  static $formats;
+
+  if (!$formats) {
+    $cache_key = 'oembedprovider:formats';
+
+    if (!$reset && ($cache = cache_get($cache_key)) && isset($cache->data)) {
+      $formats = $cache->data;
+    }
+    else {
+      $formats = array(
+        'json' => '_oembedprovider_formats_json',
+        'xml' => '_oembedprovider_formats_xml',
+      );
+      drupal_alter('oembedprovider_formats', $formats);
+
+      cache_set($cache_key, $formats);
+    }
+  }
+
+  return $formats;
+}
+
+/**
+ * Implementation of hook_oembedprovider_formats_alter().
+ */
+function oembedprovider_oembedprovider_formats_alter($formats) {
+  $formats['jsonp'] = '_oembedprovider_formats_jsonp';
+}
+
+/**
+ * Callback handler for oembed requests.
+ *
+ * @param string $format
+ *  Optional. The response format to use.
+ *  Defaults to $_GET['format'] or 'json', in that order.
+ */
+function _oembedprovider_handle_request($format='') {
+  if (empty($format)) {
+    $format = empty($_GET['format']) ? 'json' : $_GET['format'];
+  }
+
+  $formats = oembedprovider_formats();
+  if (!isset($formats[$format])) {
+    header('HTTP/1.0 501 Not implemented. Unsupported response format "' . check_plain($format) . '"');
+    die;
+  }
+
+  if (empty($_GET['url'])) {
+    header('HTTP/1.0 406 Not acceptable. The url parameter is required.');
+    die;
+  }
+
+  $url = $_GET['url'];
+  $width = isset($_GET['width']) ? $_GET['width'] : 0;
+  $height = isset($_GET['height']) ? $_GET['height'] : 0;
+
+  $matches = array();
+  $provider = oembedprovider_get_provider($url, $matches);
+  if ($provider) {
+    call_user_func($provider, $url, $matches);
+  }
+  else {
+    header('HTTP/1.0 404 Not found.');
+    die;
+  }
+}
+
+/**
+ * Returns the provider for a url.
+ *
+ * @param string $url
+ *  Teh url to get the provider for.
+ * @return mixed
+ *  A valid callback or FALSE
+ */
+function oembedprovider_get_provider($url, &$matches) {
+  $host = _oembedprovider_get_host($url);
+  $providers = oembedprovider_providers($host);
+
+  foreach ($providers as $regex => $callback) {
+    if (preg_match($regex, $url, $matches)) {
+      return $callback;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * A utility function to get the base domain from a url.
+ *
+ * @param string $uri
+ *  The uri to get the domain form
+ * @return string
+ *  The domain or NULL
+ */
+function _oembedprovider_get_host($uri) {
+  $matches = array();
+  if (preg_match('/^https?\:\/\/([^\/]+)/', $uri, $matches)) {
+    $matches = preg_split('/\./', $matches[1]);
+    $mc = count($matches);
+    if ($mc>=2) {
+      return $matches[$mc-2] . '.' . $matches[$mc-1];
+    }
+    else {
+      return $matches[0];
+    }
+  }
+  return NULL;
+}
+
+function _oembedprovider_teaser_provider($url, $node) {
+
+}
+
+function _oembedprovider_formats_jsonp() {
+
+}
+
+function _oembedprovider_formats_json($callback = NULL) {
+
+}
+
+function _oembedprovider_formats_xml() {
+
+}
