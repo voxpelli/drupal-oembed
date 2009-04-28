@@ -1,4 +1,7 @@
+; $Id$
+package = oEmbed
 name = oEmbed filter
 description = Replaces oEmbed-enabled URL:s with embedded content
+dependencies[] = oembedcore
 dependencies[] = filter
 core = 6.x

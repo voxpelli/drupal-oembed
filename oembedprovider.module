@@ -43,9 +43,6 @@ function oembedprovider_theme() {
 function oembedprovider_theme_oembed_node($node) {
   $node = node_build_content($node, TRUE, FALSE);
 
-  $node->links = module_invoke_all('link', 'node', $node, TRUE);
-  drupal_alter('link', $node->links, $node);
-
   // Set the proper node part, then unset unused $node part so that a bad
   // theme can not open a security hole.
   $content = drupal_render($node->content);
@@ -66,56 +63,10 @@ function oembedprovider_theme_oembed_node($node) {
 function oembedprovider_oembedprovider() {
   $base_url = url('', array('absolute' => TRUE)) . 'node/*';
   return array(
-    $base_url => '_oembedprovider_node_provider',
+    $base_url => array(
+      'callback' => '_oembedprovider_node_provider',
+    ),
   );
-}
-
-/**
- * Returns all the registered providers, or the providers for a specific host.
- *
- * @param string $host
- *  Optional. Supply a hostname if you only want the provider patterns for a specific host.
- * @return array
- */
-function oembedprovider_providers($host=NULL) {
-  static $providers;
-
-  if (!$providers) {
-    $cache_key = 'oembedprovider:providers';
-
-    if (!$reset && ($cache = cache_get($cache_key)) && isset($cache->data)) {
-      $providers = $cache->data;
-    }
-    else {
-      $providers = array();
-      $modules = module_implements('oembedprovider');
-      foreach ($modules as $module) {
-        $ps = call_user_func($module . '_oembedprovider');
-        foreach ($ps as $pattern => $callback) {
-          $host = _oembedprovider_get_host($pattern);
-          $regex_pattern = '/' . str_replace('\*', '(.+)', preg_quote($pattern, '/')) . '/';
-          $providers[$host][$regex_pattern] = $callback;
-        }
-      }
-      foreach ($providers as $host => &$patterns) {
-        uksort($patterns, '_oembedprovider_specificity_compare');
-      }
-    }
-
-    cache_set($cache_key, $providers);
-  }
-
-  if ($host) {
-    return isset($providers[$host]) ? $providers[$host] : array();
-  }
-  return $providers;
-}
-
-/**
- * Helper function that compares the length of match expressions.
- */
-function _oembedprovider_specificity_compare($a, $b) {
-  return strlen($b) - strlen($a);
 }
 
 /**
@@ -199,10 +150,11 @@ function _oembedprovider_handle_request($format='') {
   $height = isset($_GET['height']) ? $_GET['height'] : 0;
 
   $matches = array();
-  $provider = oembedprovider_get_provider($url, $matches);
+  $provider = oembedcore_get_provider($url, $matches);
 
   if ($provider) {
-    $data = call_user_func($provider, $url, $matches);
+    $callback = isset($provider['callback']) ? $provider['callback'] : '_oembedprovider_oembed_proxy';
+    $data = call_user_func($callback, $provider, $url, $matches);
     print call_user_func($f['callback'], $data);
     exit;
   }
@@ -217,47 +169,10 @@ function _oembedprovider_handle_request($format='') {
   }
 }
 
-/**
- * Returns the provider for a url.
- *
- * @param string $url
- *  Teh url to get the provider for.
- * @return mixed
- *  A valid callback or FALSE
- */
-function oembedprovider_get_provider($url, &$matches) {
-  $host = _oembedprovider_get_host($url);
-  $providers = oembedprovider_providers($host);
-
-  foreach ($providers as $regex => $callback) {
-    if (preg_match($regex, $url, $matches)) {
-      return $callback;
-    }
-  }
-  return FALSE;
-}
-
-/**
- * A utility function to get the base domain from a url.
- *
- * @param string $uri
- *  The uri to get the domain form
- * @return string
- *  The domain or NULL
- */
-function _oembedprovider_get_host($uri) {
-  $matches = array();
-  if (preg_match('/^https?\:\/\/([^\/]+)/', $uri, $matches)) {
-    $matches = preg_split('/\./', $matches[1]);
-    $mc = count($matches);
-    if ($mc>=2) {
-      return $matches[$mc-2] . '.' . $matches[$mc-1];
-    }
-    else {
-      return $matches[0];
-    }
-  }
-  return NULL;
+function _oembedprovider_oembed_proxy($provider, $url, $matches) {
+  return _oembedprovider_result('rich', array(
+    'html' => oembedcore_oembed_fetch($provider, $url, $matches),
+  ));
 }
 
 function _oembedprovider_result($type, $props) {
@@ -277,7 +192,7 @@ function _oembedprovider_result($type, $props) {
  * @param string $url
  * @param array $matches
  */
-function _oembedprovider_node_provider($url, $matches) {
+function _oembedprovider_node_provider($provider, $url, $matches) {
   $nid = $matches[1];
   $node = node_load($nid);
   $author = user_load(array('uid' => $node->uid));

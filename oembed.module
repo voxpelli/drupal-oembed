@@ -108,12 +108,10 @@ function _oembed_filter_settings($format) {
   return $form;
 }
 
-function _oembed_parse_full_links($match) {
-  global $oembed_maxwidth, $oembed_maxheight;
-
+function oembed_oembedprovider() {
   $oembeddable = array(
     'flickr' => array(
-      'scheme'   => 'http://*flickr.com/*',
+      'scheme'   => array('http://*.flickr.com/*', 'http://flickr.com/*'),
       'endpoint' => 'http://www.flickr.com/services/oembed/',
     ),
     'viddler' => array(
@@ -144,54 +142,28 @@ function _oembed_parse_full_links($match) {
     ),
   );
 
-  $url = decode_entities($match[0]);
-
+  $providers = array();
   foreach ($oembeddable as $site) {
-    foreach ((array) $site['scheme'] as $scheme) {
-      if (preg_match('/' . str_replace('\*', '\S+', preg_quote($scheme, '/')) . '/i', $url)) {
-        $url = $site['endpoint'] . '?url=' . urlencode($url);
-        if ($oembed_maxwidth) {
-          $url .= '&maxwidth=' . $oembed_maxwidth;
-        }
-        if ($oembed_maxheight) {
-          $url .= '&maxheight=' . $oembed_maxheight;
-        }
-        $response = @file_get_contents($url);
-        if (!$response) {
-          continue;
-        }
-        $embed = json_decode($response);
-        if (is_string($embed)) {
-          $embed = new SimpleXMLElement($embed);
-        }
-        switch ($embed->type) {
-          case 'photo':
-            $return  = '<span class="oembed">';
-              if (!empty($embed->title)) {
-                $return .= l($embed->title, $match[0], array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title')));
-              }
-              $return .= ' ' . l('<img src="' . check_url($embed->url) . '" />', $match[0], array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-photo oembed-content')));
-            $return .= '</span>';
-            break;
-          case 'rich':
-          case 'video':
-            $return  = '<div class="oembed">';
-              if (!empty($embed->title)) {
-                $return .= l($embed->title, $match[0], array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title')));
-              }
-              $return .= ' <span class="oembed-content oembed-' . ($embed->type == 'video' ? 'video' : 'rich') . '">' . $embed->html . '</span>';
-            $return .= '</div>';
-            break;
-          case 'link':
-            $return .= l($embed->title, $match[0], array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title oembed-link')));
-            break;
-          default:
-        }
-      }
+    foreach ((array)$site['scheme'] as $scheme) {
+      $providers[$scheme] = array(
+        'endpoint' => $site['endpoint'],
+      );
     }
   }
-  if (!isset($return)) {
-    $return  = l($match[0], $match[0], array('absolute' => TRUE));
+  return $providers;
+}
+
+function _oembed_parse_full_links($match) {
+  global $oembed_maxwidth, $oembed_maxheight;
+  $return = '';
+  $url = decode_entities($match[0]);
+  $matches = array();
+  if ($provider = oembedcore_get_provider($url, $matches)) {
+    $return = oembedcore_oembed_fetch($provider, $url, $matches);
   }
+  if (empty($return)) {
+    $return = l($match[0], $match[0], array('absolute' => TRUE));
+  }
+
   return $return;
 }
