@@ -113,7 +113,10 @@ function oembedcore_oembed_fetch($provider, $url, $matches) {
       $embed = new SimpleXMLElement($embed);
     }
   }
+  return $embed;
+}
 
+function oembedcore_oembed_html($embed, $url) {
   $return = '';
   switch ($embed->type) {
     case 'photo':

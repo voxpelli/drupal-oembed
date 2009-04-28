@@ -159,7 +159,8 @@ function _oembed_parse_full_links($match) {
   $url = decode_entities($match[0]);
   $matches = array();
   if ($provider = oembedcore_get_provider($url, $matches)) {
-    $return = oembedcore_oembed_fetch($provider, $url, $matches);
+    $embed = oembedcore_oembed_fetch($provider, $url, $matches);
+    $return = oembedcore_oembed_html($embed, $url);
   }
   if (empty($return)) {
     $return = l($match[0], $match[0], array('absolute' => TRUE));

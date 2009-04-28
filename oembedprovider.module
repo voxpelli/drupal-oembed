@@ -170,9 +170,7 @@ function _oembedprovider_handle_request($format='') {
 }
 
 function _oembedprovider_oembed_proxy($provider, $url, $matches) {
-  return _oembedprovider_result('rich', array(
-    'html' => oembedcore_oembed_fetch($provider, $url, $matches),
-  ));
+  return oembedcore_oembed_fetch($provider, $url, $matches);
 }
 
 function _oembedprovider_result($type, $props) {
