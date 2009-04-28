@@ -19,16 +19,54 @@ function oembedprovider_menu() {
 }
 
 /**
+ * Implementation of hook_theme().
+ */
+function oembedprovider_theme() {
+  $themes = array();
+  $themes['oembed_node'] = array(
+    'function' => 'oembedprovider_theme_oembed_node',
+    'arguments' => array(
+      'node' => NULL,
+    ),
+  );
+  return $themes;
+}
+
+/**
+ * Default theme implementation for oembed_node. We just mirror the node_view function
+ * and pass everything on to the node template.
+ *
+ * @param object $node
+ * @return string
+ *  The html representation of the node
+ */
+function oembedprovider_theme_oembed_node($node) {
+  $node = node_build_content($node, TRUE, FALSE);
+
+  $node->links = module_invoke_all('link', 'node', $node, TRUE);
+  drupal_alter('link', $node->links, $node);
+
+  // Set the proper node part, then unset unused $node part so that a bad
+  // theme can not open a security hole.
+  $content = drupal_render($node->content);
+  $node->teaser = $content;
+  unset($node->body);
+
+  // Allow modules to modify the fully-built node.
+  node_invoke_nodeapi($node, 'alter', TRUE, FALSE);
+
+  return theme('node', $node, TRUE, FALSE);
+}
+
+/**
  * Implementation of hook_oembedprovider().
  *
  * @return array
  */
 function oembedprovider_oembedprovider() {
   $base_url = url('', array('absolute' => TRUE)) . 'node/*';
-  $events_url = url('', array('absolute' => TRUE)) . 'events/*';
   return array(
-    $base_url => '_oembedprovider_teaser_provider',
-    $events_url => '_oembedprovider_teaser_provider',
+    $base_url => '_oembedprovider_node_provider',
   );
 }
 
@@ -96,8 +134,14 @@ function oembedprovider_formats() {
     }
     else {
       $formats = array(
-        'json' => '_oembedprovider_formats_json',
-        'xml' => '_oembedprovider_formats_xml',
+        'json' => array(
+          'mime' => 'text/plain',
+          'callback' =>'_oembedprovider_formats_json',
+        ),
+        'xml' => array(
+          'mime' => 'text/xml',
+          'callback' =>'_oembedprovider_formats_xml',
+        ),
       );
       drupal_alter('oembedprovider_formats', $formats);
 
@@ -112,7 +156,10 @@ function oembedprovider_formats() {
  * Implementation of hook_oembedprovider_formats_alter().
  */
 function oembedprovider_oembedprovider_formats_alter($formats) {
-  $formats['jsonp'] = '_oembedprovider_formats_jsonp';
+  $formats['jsonp'] = array(
+    'mime' => 'text/javascript',
+    'callback' => '_oembedprovider_formats_jsonp',
+  );
 }
 
 /**
@@ -127,14 +174,23 @@ function _oembedprovider_handle_request($format='') {
     $format = empty($_GET['format']) ? 'json' : $_GET['format'];
   }
 
+  // Get the supported formats, and abort if a unsupported format it requested
   $formats = oembedprovider_formats();
   if (!isset($formats[$format])) {
     header('HTTP/1.0 501 Not implemented. Unsupported response format "' . check_plain($format) . '"');
     die;
   }
+  $f = $formats[$format];
+  header('Content-type: ' . $f['mime']);
 
+  // Check that we got a url
   if (empty($_GET['url'])) {
     header('HTTP/1.0 406 Not acceptable. The url parameter is required.');
+    print call_user_func($f['callback'], _oembedprovider_result('rich', array(
+      'title' => t('Not acceptable'),
+      'error' => 1,
+      'html' => t('The url parameter is required'),
+    )));
     die;
   }
 
@@ -144,11 +200,19 @@ function _oembedprovider_handle_request($format='') {
 
   $matches = array();
   $provider = oembedprovider_get_provider($url, $matches);
+
   if ($provider) {
-    call_user_func($provider, $url, $matches);
+    $data = call_user_func($provider, $url, $matches);
+    print call_user_func($f['callback'], $data);
+    exit;
   }
   else {
     header('HTTP/1.0 404 Not found.');
+    print call_user_func($f['callback'], _oembedprovider_result('rich', array(
+      'title' => t('Not found'),
+      'error' => 1,
+      'html' => t('Could not find a provider that supports this url'),
+    )));
     die;
   }
 }
@@ -196,18 +260,61 @@ function _oembedprovider_get_host($uri) {
   return NULL;
 }
 
-function _oembedprovider_teaser_provider($url, $node) {
-
+function _oembedprovider_result($type, $props) {
+  return array_merge(array(
+    'type' => $type,
+    'version' => '1.0',
+    'provider_name' => variable_get('site_name', ''),
+    'width' => 0,
+    'height' => 0,
+  ), $props);
 }
 
-function _oembedprovider_formats_jsonp() {
 
+/**
+ * The default provider to handle nodes
+ *
+ * @param string $url
+ * @param array $matches
+ */
+function _oembedprovider_node_provider($url, $matches) {
+  $nid = $matches[1];
+  $node = node_load($nid);
+  $author = user_load(array('uid' => $node->uid));
+  return _oembedprovider_result('rich', array(
+    'html' => theme('oembed_node', $node),
+    'title' => $node->title,
+    'author_name' => $author->name,
+    'author_url' => url('user/' . $author->uid, array('absolute' => TRUE)),
+  ));
 }
 
-function _oembedprovider_formats_json($callback = NULL) {
-
+/**
+ * JSONP formatter
+ */
+function _oembedprovider_formats_jsonp($data) {
+  $callback = !empty($_GET['callback']) ? $_GET['callback'] : 'jsonp';
+  return sprintf('%s(%s)', $callback, _oembedprovider_formats_json($data));
 }
 
-function _oembedprovider_formats_xml() {
+/**
+ * JSON formatter
+ */
+function _oembedprovider_formats_json($data) {
+  return json_encode($data);
+}
 
+/**
+ * XML formatter
+ */
+function _oembedprovider_formats_xml($data) {
+  $doc = new DomDocument('1.0', 'utf-8');
+  $oembed = $doc->createElement('oembed');
+  $doc->appendChild($oembed);
+  foreach ($data as $key => $value) {
+    $e = $doc->createElement($key);
+    $e->appendChild($doc->createTextNode($value));
+    $oembed->appendChild($e);
+  }
+  return $doc->saveXml();
 }
