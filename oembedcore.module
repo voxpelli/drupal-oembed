@@ -56,7 +56,7 @@ function oembedcore_providers($url_host=NULL) {
   if (!$providers) {
     $cache_key = 'oembedcore:providers';
 
-    if ($cache = cache_get($cache_key) && isset($cache->data)) {
+    if (($cache = cache_get($cache_key)) && isset($cache->data)) {
       $providers = $cache->data;
     }
     else {
