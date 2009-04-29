@@ -1,11 +1,13 @@
 <?php
 
 function _oembed_filter_apply($text, $format) {
-  global $oembed_maxwidth, $oembed_maxheight;
-  $oembed_maxwidth  = intval(variable_get('oembed_maxwidth_'  . $format, ''));
-  $oembed_maxheight = intval(variable_get('oembed_maxheight_' . $format, ''));
+  global $oembed_default_attributes;
+  $oembed_default_attributes = array(
+    'maxwidth' => intval(variable_get('oembed_maxwidth_'  . $format, '')),
+    'haxheight' => intval(variable_get('oembed_maxheight_' . $format, '')),
+  );
   $text = preg_replace_callback("((?:^|\b)(?:http://|https://)[a-zA-Z0-9@:%_+*~#?&=.,/;-]+[a-zA-Z0-9@:%_+*~#&=/;-](?:$|\b)/?)", '_oembed_parse_full_links', $text);
-  unset($oembed_maxwidth, $oembed_maxheight);
+  unset($oembed_default_attributes);
   return $text;
 }
 
@@ -77,7 +79,6 @@ function _oembed_oembedprovider() {
 }
 
 function _oembed_parse_full_links($match) {
-  global $oembed_maxwidth, $oembed_maxheight;
   $return = '';
   $url = decode_entities($match[0]);
   $matches = array();

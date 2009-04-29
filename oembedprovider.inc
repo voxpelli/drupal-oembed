@@ -41,8 +41,16 @@ function _oembedprovider_handle_request($format='') {
   $provider = oembedcore_get_provider($url, $matches);
 
   if ($provider) {
+    $forward = array('maxwidth', 'maxheight', 'format');
+    $attributes = array();
+    foreach ($forward as $key) {
+      if (isset($_GET[$key])) {
+        $attributes[$key] = $_GET[$key];
+      }
+    }
+
     $callback = isset($provider['callback']) ? $provider['callback'] : 'oembedcore_oembed_fetch';
-    $data = call_user_func($callback, $provider, $url, $matches);
+    $data = call_user_func($callback, $provider, $url, $matches, $attributes);
     print call_user_func($f['callback'], $data);
     exit;
   }
