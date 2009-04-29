@@ -91,6 +91,14 @@ function _oembedcore_specificity_compare($a, $b) {
   return strlen($b) - strlen($a);
 }
 
+function oembedcore_oembed_data($url) {
+  $matches = array();
+  if ($provider = oembedcore_get_provider($url, $matches)) {
+    return oembedcore_oembed_fetch($provider, $url, $matches);
+  }
+  return FALSE;
+}
+
 function oembedcore_oembed_fetch($provider, $url, $matches) {
   $source = isset($provider['callback']) ? $provider['callback'] : $provider['endpoint'];
   $cache_key = 'oembedcore:embed:' . md5($source . $url);
