@@ -98,7 +98,7 @@ function oembedprovider_formats() {
     else {
       $formats = array(
         'json' => array(
-          'mime' => 'text/plain',
+          'mime' => 'text/javascript',
           'callback' =>'_oembedprovider_formats_json',
         ),
         'xml' => array(
@@ -118,7 +118,7 @@ function oembedprovider_formats() {
 /**
  * Implementation of hook_oembedprovider_formats_alter().
  */
-function oembedprovider_oembedprovider_formats_alter($formats) {
+function oembedprovider_oembedprovider_formats_alter(&$formats) {
   $formats['jsonp'] = array(
     'mime' => 'text/javascript',
     'callback' => '_oembedprovider_formats_jsonp',
