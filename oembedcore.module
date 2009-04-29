@@ -132,7 +132,7 @@ function oembedcore_oembed_fetch($provider, $url, $matches, $attributes = array(
       }
     }
 
-    $max_age = empty($provider['callback']) ? 600 : 60;
+    $max_age = isset($embed->cache_age) ? intval($embed->cache_age) : empty($provider['callback']) ? 600 : 60;
     cache_set($cache_key, $embed, 'cache', time() + $max_age);
   }
   return $embed;
