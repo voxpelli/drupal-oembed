@@ -12,7 +12,6 @@
 function oembedcore_get_provider($url, &$matches) {
   $host = _oembedcore_get_host($url);
   $providers = oembedcore_providers($host);
-
   foreach ($providers as $regex => $info) {
     if (preg_match($regex, $url, $matches)) {
       return $info;
@@ -51,13 +50,13 @@ function _oembedcore_get_host($uri) {
  *  Optional. Supply a hostname if you only want the provider patterns for a specific host.
  * @return array
  */
-function oembedcore_providers($host=NULL) {
+function oembedcore_providers($url_host=NULL) {
   static $providers;
 
   if (!$providers) {
     $cache_key = 'oembedcore:providers';
 
-    if (!$reset && ($cache = cache_get($cache_key)) && isset($cache->data)) {
+    if ($cache = cache_get($cache_key) && isset($cache->data)) {
       $providers = $cache->data;
     }
     else {
@@ -79,8 +78,8 @@ function oembedcore_providers($host=NULL) {
     cache_set($cache_key, $providers);
   }
 
-  if ($host) {
-    return isset($providers[$host]) ? $providers[$host] : array();
+  if ($url_host) {
+    return isset($providers[$url_host]) ? $providers[$url_host] : array();
   }
   return $providers;
 }
@@ -93,25 +92,38 @@ function _oembedcore_specificity_compare($a, $b) {
 }
 
 function oembedcore_oembed_fetch($provider, $url, $matches) {
-  if ($provider['callback']) {
-    $embed = (object)call_user_func($provider['callback'], $rovider, $url, $matches);
+  $source = isset($provider['callback']) ? $provider['callback'] : $provider['endpoint'];
+  $cache_key = 'oembedcore:embed:' . md5($source . $url);
+  $cache = cache_get($cache_key);
+  if ($cache && isset($cache->data)) {
+    $embed = $cache->data;
   }
   else {
-    $fetch_url = $provider['endpoint'] . '?url=' . urlencode($url);
-    if ($oembed_maxwidth) {
-      $fetch_url .= '&maxwidth=' . $oembed_maxwidth;
+    if (!empty($provider['callback'])) {
+      $embed = (object)call_user_func($provider['callback'], $rovider, $url, $matches);
     }
-    if ($oembed_maxheight) {
-      $fetch_url .= '&maxheight=' . $oembed_maxheight;
+    else {
+      $fetch_url = $provider['endpoint'] . '?url=' . urlencode($url);
+
+      if ($oembed_maxwidth) {
+        $fetch_url .= '&maxwidth=' . $oembed_maxwidth;
+      }
+      if ($oembed_maxheight) {
+        $fetch_url .= '&maxheight=' . $oembed_maxheight;
+      }
+      $response = @file_get_contents($fetch_url);
+      if (!$response) {
+        return NULL;
+      }
+      $embed = json_decode($response);
+      if (is_string($embed)) {
+        $embed = new SimpleXMLElement($embed);
+        $embed = (object)get_object_vars($embed);
+      }
     }
-    $response = @file_get_contents($fetch_url);
-    if (!$response) {
-      return NULL;
-    }
-    $embed = json_decode($response);
-    if (is_string($embed)) {
-      $embed = new SimpleXMLElement($embed);
-    }
+
+    $max_age = empty($provider['callback']) ? 600 : 60;
+    cache_set($cache_key, $embed, 'cache', time() + $max_age);
   }
   return $embed;
 }
