@@ -34,14 +34,12 @@ function _oembedprovider_handle_request($format='') {
   }
 
   $url = $_GET['url'];
-  $width = isset($_GET['width']) ? $_GET['width'] : 0;
-  $height = isset($_GET['height']) ? $_GET['height'] : 0;
 
   $matches = array();
   $provider = oembedcore_get_provider($url, $matches);
 
   if ($provider) {
-    $forward = array('maxwidth', 'maxheight', 'format');
+    $forward = array('maxwidth', 'maxheight');
     $attributes = array();
     foreach ($forward as $key) {
       if (isset($_GET[$key])) {
@@ -49,8 +47,7 @@ function _oembedprovider_handle_request($format='') {
       }
     }
 
-    $callback = isset($provider['callback']) ? $provider['callback'] : 'oembedcore_oembed_fetch';
-    $data = call_user_func($callback, $provider, $url, $matches, $attributes);
+    $data = oembedcore_oembed_fetch($provider, $url, $matches, $attributes);
     print call_user_func($f['callback'], $data);
     exit;
   }

@@ -117,7 +117,7 @@ function oembedcore_oembed_fetch($provider, $url, $matches, $attributes = array(
   else {
     if (!empty($provider['callback'])) {
       module_load_include('inc', 'oembedprovider');
-      $embed = (object)call_user_func($provider['callback'], $rovider, $url, $matches);
+      $embed = (object)call_user_func($provider['callback'], $rovider, $url, $matches, $attributes);
     }
     else {
       $fetch_url = $provider['endpoint'] . '?' . $query;
