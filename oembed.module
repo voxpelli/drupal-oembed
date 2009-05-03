@@ -59,6 +59,7 @@ function oembed_filter($op, $delta = 0, $format = -1, $text = '') {
     case 'process':
       switch ($delta) {
         case 0:
+          module_load_include('inc', 'oembed');
           return _oembed_filter_apply($text, $format);
         default:
           return $text;
@@ -67,6 +68,7 @@ function oembed_filter($op, $delta = 0, $format = -1, $text = '') {
     case 'settings':
       switch ($delta) {
         case 0:
+          module_load_include('inc', 'oembed');
           return _oembed_filter_settings($format);
         default:
           return;
@@ -77,126 +79,7 @@ function oembed_filter($op, $delta = 0, $format = -1, $text = '') {
   }
 }
 
-function _oembed_filter_apply($text, $format) {
-  global $oembed_maxwidth, $oembed_maxheight;
-  $oembed_maxwidth  = intval(variable_get('oembed_maxwidth_'  . $format, ''));
-  $oembed_maxheight = intval(variable_get('oembed_maxheight_' . $format, ''));
-  $text = preg_replace_callback("`(^|<p>|<li>|<br\s*/?>|[ \n\r\t\(])((http://|https://|ftp://|mailto:|smb://|afp://|file://|gopher://|news://|ssl://|sslv2://|sslv3://|tls://|tcp://|udp://)([a-zA-Z0-9@:%_+*~#?&=.,/;-]*[a-zA-Z0-9@:%_+*~#&=/;-]))([.,?!]*?)(?=($|</p>|</li>|<br\s*/?>|[ \n\r\t\)]))`i", '_oembed_preg_parse', $text); 
-  unset($oembed_maxwidth, $oembed_maxheight);
-  return $text;
-}
-
-function _oembed_filter_settings($format) {
-  $form = array();
-  $form['oembed'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('oEmbed'),
-    '#collapsible' => TRUE,
-  );
-  $form['oembed']['oembed_maxwidth_' . $format] = array(
-    '#type' => 'textfield',
-    '#title' => t('Maximum width of embed'),
-    '#default_value' => variable_get('oembed_maxwidth_' . $format, ''),
-    '#description' => t('The maximum width of an embed, isn\'t respected by all providers'),
-  );
-  $form['oembed']['oembed_maxheight_' . $format] = array(
-    '#type' => 'textfield',
-    '#title' => t('Maximum height of embed'),
-    '#default_value' => variable_get('oembed_maxheight_' . $format, ''),
-    '#description' => t('The maximum height of an embed, isn\'t respected by all providers'),
-  );
-  return $form;
-}
-
-function _oembed_preg_parse($match) {
-  return _oembed_resolve_link($match[2], $match[1], $match[5]);
-}
-
-function _oembed_resolve_link($match, $prefix = '', $suffix = '') {
-  global $oembed_maxwidth, $oembed_maxheight;
-
-  $oembeddable = array(
-    'flickr' => array(
-      'scheme'   => 'http://*flickr.com/*',
-      'endpoint' => 'http://flickr.com/services/oembed/',
-    ),
-    'viddler' => array(
-      'scheme'   => 'http://*.viddler.com/*',
-      'endpoint' => 'http://lab.viddler.com/services/oembed/',
-    ),
-    'qik' => array(
-      'scheme'   => array('http://qik.com/video/*', 'http://qik.com/*'),
-      'endpoint' => 'http://qik.com/api/oembed.json',
-    ),
-    'revision3' => array(
-      'scheme'   => 'http://*.revision3.com/*',
-      'endpoint' => 'http://revision3.com/api/oembed/',
-    ),
-    'vimeo' => array(
-      'scheme'   => array('http://www.vimeo.com/*', 'http://www.vimeo.com/groups/*/*'),
-      'endpoint' => 'http://www.vimeo.com/api/oembed.json',
-    ),
-    'oohembed' => array(
-      'scheme'   => array(
-        'http://*.youtube.com/watch*',
-        'http://*.wikipedia.org/wiki/*',
-        'http://*.slideshare.net/*',
-        'http://*.imdb.com/title/tt*/',
-        'http://*.collegehumor.com/video:*',
-      ),
-      'endpoint' => 'http://oohembed.com/oohembed/',
-    ),
-  );
-
-  $url = decode_entities($match);
-
-  foreach ($oembeddable as $site) {
-    foreach ((array) $site['scheme'] as $scheme) {
-      if (preg_match('/' . str_replace('\*', '\S+', preg_quote($scheme, '/')) . '/i', $url)) {
-        $url = $site['endpoint'] . '?url=' . urlencode($url);
-        if ($oembed_maxwidth) {
-          $url .= '&maxwidth=' . $oembed_maxwidth;
-        }
-        if ($oembed_maxheight) {
-          $url .= '&maxheight=' . $oembed_maxheight;
-        }
-        $response = @file_get_contents($url);
-        if (!$response) {
-          continue;
-        }
-        $embed = json_decode($response);
-        if (!is_object($embed)) {
-          $embed = new SimpleXMLElement($response);
-        }
-        switch ($embed->type) {
-          case 'photo':
-            $return = '<span class="oembed">';
-              if (!empty($embed->title)) {
-                $return .= l($embed->title, $match, array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title')));
-              }
-              $return .= ' ' . l('<img src="' . check_url($embed->url) . '" />', $match, array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-photo oembed-content')));
-            $return .= '</span>';
-            break;
-          case 'rich':
-          case 'video':
-            $return  = '<div class="oembed">';
-              if (!empty($embed->title)) {
-                $return .= l($embed->title, $match, array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title')));
-              }
-              $return .= ' <span class="oembed-content oembed-' . ($embed->type == 'video' ? 'video' : 'rich') . '">' . $embed->html . '</span>';
-            $return .= '</div>';
-            break;
-          case 'link':
-            $return = l($embed->title, $match, array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title oembed-link')));
-            break;
-          default:
-        }
-      }
-    }
-  }
-
-  if (!isset($return)) {
-    $return  = l($match, $url, array('absolute' => TRUE));
-  }
-  return $prefix . $return . $suffix;
+function oembed_oembedprovider() {
+  module_load_include('inc', 'oembed');
+  return _oembed_oembedprovider();
 }
