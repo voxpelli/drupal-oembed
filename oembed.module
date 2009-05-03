@@ -81,7 +81,7 @@ function _oembed_filter_apply($text, $format) {
   global $oembed_maxwidth, $oembed_maxheight;
   $oembed_maxwidth  = intval(variable_get('oembed_maxwidth_'  . $format, ''));
   $oembed_maxheight = intval(variable_get('oembed_maxheight_' . $format, ''));
-  $text = preg_replace_callback("((?:^|\b)(?:http://|https://)[a-zA-Z0-9@:%_+*~#?&=.,/;-]+[a-zA-Z0-9@:%_+*~#&=/;-](?:$|\b)/?)", '_oembed_parse_full_links', $text);
+  $text = preg_replace_callback("`(^|<p>|<li>|<br\s*/?>|[ \n\r\t\(])((http://|https://|ftp://|mailto:|smb://|afp://|file://|gopher://|news://|ssl://|sslv2://|sslv3://|tls://|tcp://|udp://)([a-zA-Z0-9@:%_+*~#?&=.,/;-]*[a-zA-Z0-9@:%_+*~#&=/;-]))([.,?!]*?)(?=($|</p>|</li>|<br\s*/?>|[ \n\r\t\)]))`i", '_oembed_preg_parse', $text); 
   unset($oembed_maxwidth, $oembed_maxheight);
   return $text;
 }
@@ -108,13 +108,17 @@ function _oembed_filter_settings($format) {
   return $form;
 }
 
-function _oembed_parse_full_links($match) {
+function _oembed_preg_parse($match) {
+  return _oembed_resolve_link($match[2], $match[1], $match[5]);
+}
+
+function _oembed_resolve_link($match, $prefix = '', $suffix = '') {
   global $oembed_maxwidth, $oembed_maxheight;
 
   $oembeddable = array(
     'flickr' => array(
       'scheme'   => 'http://*flickr.com/*',
-      'endpoint' => 'http://www.flickr.com/services/oembed/',
+      'endpoint' => 'http://flickr.com/services/oembed/',
     ),
     'viddler' => array(
       'scheme'   => 'http://*.viddler.com/*',
@@ -144,7 +148,7 @@ function _oembed_parse_full_links($match) {
     ),
   );
 
-  $url = decode_entities($match[0]);
+  $url = decode_entities($match);
 
   foreach ($oembeddable as $site) {
     foreach ((array) $site['scheme'] as $scheme) {
@@ -161,37 +165,38 @@ function _oembed_parse_full_links($match) {
           continue;
         }
         $embed = json_decode($response);
-        if (is_string($embed)) {
-          $embed = new SimpleXMLElement($embed);
+        if (!is_object($embed)) {
+          $embed = new SimpleXMLElement($response);
         }
         switch ($embed->type) {
           case 'photo':
-            $return  = '<span class="oembed">';
+            $return = '<span class="oembed">';
               if (!empty($embed->title)) {
-                $return .= l($embed->title, $match[0], array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title')));
+                $return .= l($embed->title, $match, array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title')));
               }
-              $return .= ' ' . l('<img src="' . check_url($embed->url) . '" />', $match[0], array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-photo oembed-content')));
+              $return .= ' ' . l('<img src="' . check_url($embed->url) . '" />', $match, array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-photo oembed-content')));
             $return .= '</span>';
             break;
           case 'rich':
           case 'video':
             $return  = '<div class="oembed">';
               if (!empty($embed->title)) {
-                $return .= l($embed->title, $match[0], array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title')));
+                $return .= l($embed->title, $match, array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title')));
               }
               $return .= ' <span class="oembed-content oembed-' . ($embed->type == 'video' ? 'video' : 'rich') . '">' . $embed->html . '</span>';
             $return .= '</div>';
             break;
           case 'link':
-            $return .= l($embed->title, $match[0], array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title oembed-link')));
+            $return = l($embed->title, $match, array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title oembed-link')));
             break;
           default:
         }
       }
     }
   }
+
   if (!isset($return)) {
-    $return  = l($match[0], $match[0], array('absolute' => TRUE));
+    $return  = l($match, $url, array('absolute' => TRUE));
   }
-  return $return;
+  return $prefix . $return . $suffix;
 }
