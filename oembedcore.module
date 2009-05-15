@@ -132,6 +132,9 @@ function oembedcore_oembed_fetch($provider, $url, $matches, $attributes = array(
       if (!is_object($embed)) {
         $embed = new SimpleXMLElement($response);
         $embed = (object)get_object_vars($embed);
+        if (!is_string($embed->title)) {
+          $embed->title = '';
+        }
       }
     }
 
