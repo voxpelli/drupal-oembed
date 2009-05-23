@@ -38,3 +38,9 @@
   display: block;
   margin: 0 auto;
 }
+.oembed .oembed-content .node {
+  max-width: 300px;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
