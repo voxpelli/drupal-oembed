@@ -89,6 +89,7 @@ function _oembedprovider_node_provider($provider, $url, $matches) {
   $nid = $matches[1];
   $node = node_load($nid);
   $author = user_load(array('uid' => $node->uid));
+  //TODO: The title and author data is currently returned as part of the rich-text html as well - this makes some clients show duplicate title and/or author information
   return _oembedprovider_result('rich', array(
     'html' => theme('oembed_node', $node),
     'title' => $node->title,
