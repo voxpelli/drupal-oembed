@@ -25,7 +25,6 @@ function oembedprovider_menu() {
 function oembedprovider_theme() {
   $themes = array();
   $themes['oembed_node'] = array(
-    'function' => 'oembedprovider_theme_oembed_node',
     'arguments' => array(
       'node' => NULL,
     ),
@@ -52,7 +51,7 @@ function oembedprovider_node_provider($provider, $url, $matches) {
  * @return string
  *  The html representation of the node
  */
-function oembedprovider_theme_oembed_node($node) {
+function theme_oembed_node($node) {
   $node = node_build_content($node, TRUE, FALSE);
 
   // Set the proper node part, then unset unused $node part so that a bad
