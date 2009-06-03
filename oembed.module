@@ -10,24 +10,9 @@
 //TODO: delete options on uninstall
 
 /**
- * Implementation of hook_theme().
- */
-function oembed_theme() {
-  return array(
-    'oembed_init' => array(
-      'arguments' => array(),
-    ),
-  );
-}
-
-/**
  * Implementation of hook_init().
  */
 function oembed_init() {
-  theme('oembed_init');
-}
-
-function theme_oembed_init() {
   drupal_add_css(drupal_get_path('module', 'oembed') . '/oembed.css');
 }
 
