@@ -1,13 +1,13 @@
 <?php
 
 function _oembed_filter_apply($text, $format) {
-  global $oembed_default_attributes;
-  $oembed_default_attributes = array(
-    'maxwidth' => intval(variable_get('oembed_maxwidth_'  . $format, '')),
-    'haxheight' => intval(variable_get('oembed_maxheight_' . $format, '')),
+  global $_oembed_default_attributes;
+  $_oembed_default_attributes = array(
+    'maxwidth'  => intval(variable_get('oembed_maxwidth_'  . $format, '')),
+    'maxheight' => intval(variable_get('oembed_maxheight_' . $format, '')),
   );
-  $text = preg_replace_callback("`(^|<p>|<li>|<br\s*/?>|[ \n\r\t\(])((http://|https://|ftp://|mailto:|smb://|afp://|file://|gopher://|news://|ssl://|sslv2://|sslv3://|tls://|tcp://|udp://)([a-zA-Z0-9@:%_+*~#?&=.,/;-]*[a-zA-Z0-9@:%_+*~#&=/;-]))([.,?!]*?)(?=($|</p>|</li>|<br\s*/?>|[ \n\r\t\)]))`i", '_oembed_preg_parse', $text); 
-  unset($oembed_default_attributes);
+  $text = preg_replace_callback("`(^|<p>|<li>|<br\s*/?>|[ \n\r\t\(])((http://|https://|ftp://|mailto:|smb://|afp://|file://|gopher://|news://|ssl://|sslv2://|sslv3://|tls://|tcp://|udp://)([a-zA-Z0-9@:%_+*~#?&=.,/;-]*[a-zA-Z0-9@:%_+*~#&=/;-]))([.,?!]*?)(?=($|</p>|</li>|<br\s*/?>|[ \n\r\t\)]))`i", '_oembed_preg_parse', $text);
+  unset($_oembed_default_attributes);
   return $text;
 }
 
@@ -82,7 +82,7 @@ function _oembed_preg_parse($match) {
   return _oembed_resolve_link($match[2], $match[1], $match[5]);
 }
 
-function _oembed_resolve_link($match) {
+function _oembed_resolve_link($match, $prefix, $suffix) {
   $return = '';
   $url = decode_entities($match);
   $matches = array();

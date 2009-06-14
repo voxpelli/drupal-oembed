@@ -2,6 +2,11 @@
 // $Id$
 
 /**
+ * @file
+ * Core functionality for oEmbed
+ */
+
+/**
  * Returns the provider for a url.
  *
  * @param string $url
@@ -102,9 +107,9 @@ function oembedcore_oembed_data($url, $attributes = array()) {
 }
 
 function oembedcore_oembed_fetch($provider, $url, $matches, $attributes = array()) {
-  global $oembed_default_attributes;
-  if (!empty($oembed_default_attributes)) {
-    $attributes = array_merge($oembed_default_attributes, $attributes);
+  global $_oembed_default_attributes;
+  if (!empty($_oembed_default_attributes)) {
+    $attributes = array_merge($_oembed_default_attributes, $attributes);
   }
   $attributes['url'] = $url;
   $query = http_build_query($attributes, NULL, '&');

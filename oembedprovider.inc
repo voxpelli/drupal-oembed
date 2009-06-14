@@ -2,6 +2,11 @@
 // $Id$
 
 /**
+ * @file
+ * Functions for the oEmbed provider
+ */
+
+/**
  * Callback handler for oembed requests.
  *
  * @param string $format

@@ -1,4 +1,10 @@
 <?php
+// $Id$
+
+/**
+ * @file
+ * Module for providing content as defined in the oEmbed specification
+ */
 
 /**
  * Implementation of hook_menu().
@@ -98,11 +104,11 @@ function oembedprovider_formats() {
       $formats = array(
         'json' => array(
           'mime' => 'text/javascript',
-          'callback' =>'_oembedprovider_formats_json',
+          'callback' => '_oembedprovider_formats_json',
         ),
         'xml' => array(
           'mime' => 'text/xml',
-          'callback' =>'_oembedprovider_formats_xml',
+          'callback' => '_oembedprovider_formats_xml',
         ),
       );
       drupal_alter('oembedprovider_formats', $formats);
