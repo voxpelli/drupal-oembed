@@ -150,6 +150,7 @@ function oembedcore_oembed_fetch($provider, $url, $matches, $attributes = array(
 }
 
 function oembedcore_oembed_html($embed, $url) {
+  //TODO: Maybe refactor into something that uses drupal_render()?
   $return = '';
   switch ($embed->type) {
     case 'photo':

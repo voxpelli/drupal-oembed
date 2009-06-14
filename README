@@ -1,1 +1,4 @@
-Drupal module implementing an input filter that enhances oEmbed enabled URL:s with data it fetches from the oEmbed providers
+Drupal module implementing the oEmbed standard: http://oembed.com/
+
+* Supplies an input filter that replaces URL:s from oEmbed enabled sites with the embeddable data fecthed from it
+* Makes it possible for a Drupal site to become an oEmbed provider itself
