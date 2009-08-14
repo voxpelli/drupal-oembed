@@ -1,0 +1,70 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Input filter that enhances oEmbed enabled URL:s with extra content
+ */
+
+//TODO: www subdomain independense for *.
+//TODO: delete options on uninstall
+
+/**
+ * Implementation of hook_init().
+ */
+function oembed_init() {
+  drupal_add_css(drupal_get_path('module', 'oembed') . '/oembed.css');
+}
+
+/**
+ * Implementation of hook_help().
+ */
+function oembed_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#filearchive':
+      return '<p>'. t('Adds an input filter for replacing oEmbed enabled URL:s with embedded content') .'</p>';
+  }
+}
+
+/**
+ * Implementation of hook_filter().
+ */
+function oembed_filter($op, $delta = 0, $format = -1, $text = '') {
+  switch ($op) {
+    case 'list':
+      return array(0 => t('oEmbed filter'));
+    case 'description':
+      switch ($delta) {
+        case 0:
+          return t('Embeds content for oEmbed-enabled web addresses and turns the rest, and e-mail addresses, into clickable links.');
+        default:
+          return;
+      }
+
+    case 'process':
+      switch ($delta) {
+        case 0:
+          module_load_include('inc', 'oembed');
+          return _oembed_filter_apply($text, $format);
+        default:
+          return $text;
+      }
+
+    case 'settings':
+      switch ($delta) {
+        case 0:
+          module_load_include('inc', 'oembed');
+          return _oembed_filter_settings($format);
+        default:
+          return;
+      }
+
+    default:
+      return $text;
+  }
+}
+
+function oembed_oembedprovider() {
+  module_load_include('inc', 'oembed');
+  return _oembed_oembedprovider();
+}

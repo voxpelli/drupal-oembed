@@ -1,0 +1,180 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Core functionality for oEmbed
+ */
+
+/**
+ * Returns the provider for a url.
+ *
+ * @param string $url
+ *  Teh url to get the provider for.
+ * @return mixed
+ *  A valid callback or FALSE
+ */
+function oembedcore_get_provider($url, &$matches) {
+  $host = _oembedcore_get_host($url);
+  if ($host) {
+    $providers = oembedcore_providers($host);
+    foreach ($providers as $regex => $info) {
+      if (preg_match($regex, $url, $matches)) {
+        return $info;
+      }
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * A utility function to get the base domain from a url.
+ *
+ * @param string $uri
+ *  The uri to get the domain form
+ * @return string
+ *  The domain or NULL
+ */
+function _oembedcore_get_host($uri) {
+  $matches = array();
+  if (preg_match('/^https?\:\/\/([^\/]+)/', $uri, $matches)) {
+    $matches = preg_split('/\./', $matches[1]);
+    $mc = count($matches);
+    if ($mc>=2) {
+      return $matches[$mc-2] . '.' . $matches[$mc-1];
+    }
+    else {
+      return $matches[0];
+    }
+  }
+  return NULL;
+}
+
+/**
+ * Returns all the registered providers, or the providers for a specific host.
+ *
+ * @param string $host
+ *  Optional. Supply a hostname if you only want the provider patterns for a specific host.
+ * @return array
+ */
+function oembedcore_providers($url_host=NULL) {
+  static $providers;
+
+  if (!$providers) {
+    $cache_key = 'oembedcore:providers';
+
+    if (($cache = cache_get($cache_key)) && isset($cache->data)) {
+      $providers = $cache->data;
+    }
+    else {
+      $providers = array();
+      $modules = module_implements('oembedprovider');
+      foreach ($modules as $module) {
+        $ps = call_user_func($module . '_oembedprovider');
+        foreach ($ps as $pattern => $info) {
+          $host = _oembedcore_get_host($pattern);
+
+          $regex_pattern = '/' . str_replace('\*', '(.+)', preg_quote($pattern, '/')) . '/';
+          $providers[$host][$regex_pattern] = $info;
+        }
+      }
+      foreach ($providers as $host => &$patterns) {
+        uksort($patterns, '_oembedcore_specificity_compare');
+      }
+    }
+    cache_set($cache_key, $providers);
+  }
+
+  if ($url_host) {
+    return isset($providers[$url_host]) ? $providers[$url_host] : array();
+  }
+  return $providers;
+}
+
+/**
+ * Helper function that compares the length of match expressions.
+ */
+function _oembedcore_specificity_compare($a, $b) {
+  return strlen($b) - strlen($a);
+}
+
+function oembedcore_oembed_data($url, $attributes = array()) {
+  $matches = array();
+  if ($provider = oembedcore_get_provider($url, $matches)) {
+    return oembedcore_oembed_fetch($provider, $url, $matches, $attributes);
+  }
+  return FALSE;
+}
+
+function oembedcore_oembed_fetch($provider, $url, $matches, $attributes = array()) {
+  global $_oembed_default_attributes;
+  if (!empty($_oembed_default_attributes)) {
+    $attributes = array_merge($_oembed_default_attributes, $attributes);
+  }
+  $attributes['url'] = $url;
+  $query = http_build_query($attributes, NULL, '&');
+
+  $source = isset($provider['callback']) ? $provider['callback'] : $provider['endpoint'];
+  $cache_key = 'oembedcore:embed:' . md5($source . $url . $query);
+  $cache = cache_get($cache_key);
+
+  if ($cache && isset($cache->data)) {
+    $embed = $cache->data;
+  }
+  else {
+    if (!empty($provider['callback'])) {
+      module_load_include('inc', 'oembedprovider');
+      $embed = (object)call_user_func($provider['callback'], $rovider, $url, $matches, $attributes);
+    }
+    else {
+      $fetch_url = $provider['endpoint'] . '?' . $query;
+
+      $response = @file_get_contents($fetch_url);
+      if (!$response) {
+        return NULL;
+      }
+      $embed = json_decode($response);
+      if (!is_object($embed)) {
+        $embed = new SimpleXMLElement($response);
+        $embed = (object)get_object_vars($embed);
+        if (!is_string($embed->title)) {
+          $embed->title = '';
+        }
+      }
+    }
+
+    $max_age = isset($embed->cache_age) ? intval($embed->cache_age) : empty($provider['callback']) ? 600 : 60;
+    cache_set($cache_key, $embed, 'cache', time() + $max_age);
+  }
+  return $embed;
+}
+
+function oembedcore_oembed_html($embed, $url) {
+  //TODO: Maybe refactor into something that uses drupal_render()?
+  $return = '';
+  switch ($embed->type) {
+    case 'photo':
+      $return  = '<span class="oembed">';
+        if (!empty($embed->title)) {
+          $return .= l($embed->title, $url, array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title')));
+        }
+        $return .= ' ' . l('<img src="' . check_url($embed->url) . '" />', $url, array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-photo oembed-content')));
+      $return .= '</span>';
+      break;
+    case 'rich':
+    case 'video':
+      $return  = '<div class="oembed">';
+        if (!empty($embed->title)) {
+          $return .= l($embed->title, $url, array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title')));
+        }
+        $return .= ' <span class="oembed-content oembed-' . ($embed->type == 'video' ? 'video' : 'rich') . '">' . $embed->html . '</span>';
+      $return .= '</div>';
+      break;
+    case 'link':
+      $return .= l($embed->title, $url, array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title oembed-link')));
+      break;
+    default:
+  }
+
+  return $return;
+}

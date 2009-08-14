@@ -1,0 +1,6 @@
+; $Id$
+package = oEmbed
+name = oEmbed Provider
+description = Turns you site into a oEmbed provider
+core = 6.x
+dependencies[] = oembedcore
