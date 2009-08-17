@@ -156,7 +156,7 @@ function oembedcore_oembed_html($embed, $url) {
     case 'photo':
       $return  = '<span class="oembed">';
         if (!empty($embed->title)) {
-          $return .= l($embed->title, $url, array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title')));
+          $return .= l($embed->title, $url, array('absolute' => TRUE, 'attributes' => array('class' => 'oembed-title')));
         }
         $return .= ' ' . l('<img src="' . check_url($embed->url) . '" />', $url, array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-photo oembed-content')));
       $return .= '</span>';
@@ -165,13 +165,13 @@ function oembedcore_oembed_html($embed, $url) {
     case 'video':
       $return  = '<div class="oembed">';
         if (!empty($embed->title)) {
-          $return .= l($embed->title, $url, array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title')));
+          $return .= l($embed->title, $url, array('absolute' => TRUE, 'attributes' => array('class' => 'oembed-title')));
         }
         $return .= ' <span class="oembed-content oembed-' . ($embed->type == 'video' ? 'video' : 'rich') . '">' . $embed->html . '</span>';
       $return .= '</div>';
       break;
     case 'link':
-      $return .= l($embed->title, $url, array('html' => TRUE, 'absolute' => TRUE, 'attributes' => array('class' => 'oembed-title oembed-link')));
+      $return .= l($embed->title, $url, array('absolute' => TRUE, 'attributes' => array('class' => 'oembed-title oembed-link')));
       break;
     default:
   }
