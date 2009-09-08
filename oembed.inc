@@ -1,4 +1,11 @@
 <?php
+// $Id$
+
+/**
+ * @file
+ *
+ * Comntans functionality used by the Oembed module
+ */
 
 function _oembed_filter_apply($text, $format) {
   global $_oembed_default_attributes;
