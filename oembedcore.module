@@ -7,6 +7,21 @@
  */
 
 /**
+ * Implementation of hook_theme().
+ */
+function oembedcore_theme() {
+  $path = drupal_get_path('module', 'oembedcore') . '/theme';
+  return array(
+    'oembed' => array(
+      'template' => 'oembed',
+      'file' => 'theme.inc',
+      'path' => $path,
+      'arguments' => array('url' => NULL, 'title' => ''),
+    ),
+  );
+}
+
+/**
  * Returns the provider for a url.
  *
  * @param string $url
@@ -38,10 +53,10 @@ function oembedcore_get_provider($url, &$matches) {
 function _oembedcore_get_host($uri) {
   $matches = array();
   if (preg_match('/^https?\:\/\/([^\/]+)/', $uri, $matches)) {
-    $matches = preg_split('/\./', $matches[1]);
-    $mc = count($matches);
-    if ($mc>=2) {
-      return $matches[$mc-2] . '.' . $matches[$mc-1];
+    $matches = explode('.', $matches[1]);
+    $match_count = count($matches);
+    if ($match_count > 1) {
+      return $matches[$match_count - 2] . '.' . $matches[$match_count - 1];
     }
     else {
       return $matches[0];
@@ -57,7 +72,7 @@ function _oembedcore_get_host($uri) {
  *  Optional. Supply a hostname if you only want the provider patterns for a specific host.
  * @return array
  */
-function oembedcore_providers($url_host=NULL) {
+function oembedcore_providers($url_host = NULL) {
   static $providers;
 
   if (!$providers) {
@@ -78,6 +93,7 @@ function oembedcore_providers($url_host=NULL) {
           $providers[$host][$regex_pattern] = $info;
         }
       }
+      drupal_alter('oembedprovider', $providers);
       foreach ($providers as $host => &$patterns) {
         uksort($patterns, '_oembedcore_specificity_compare');
       }
@@ -149,6 +165,9 @@ function oembedcore_oembed_fetch($provider, $url, $matches, $attributes = array(
   return $embed;
 }
 
+/**
+ * To be used for HTML in cases where the HTML is cached independent of the theme - like in the case of input filters.
+ */
 function oembedcore_oembed_html($embed, $url) {
   //TODO: Maybe refactor into something that uses drupal_render()?
   $return = '';

@@ -1,0 +1,55 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * OEmbed field core hooks and functions
+ */
+
+/**
+ * Implementation of hook_field_formatter_info().
+ */
+function oembedfield_field_formatter_info() {
+  return array(
+    'oembed_default' => array(
+      'label' => t('OEmbed'),
+      'field types' => array('link'),
+      'description' => t('Embeds links if possible - otherwise just links them.'),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function oembedfield_theme() {
+  return array(
+    'oembedfield_formatter_oembed_default' => array(
+      'arguments' => array('element' => NULL),
+    ),
+  );
+}
+
+/**
+ * @defgroup "Theme Callbacks"
+ * @{
+ * @see oembedfield_theme().
+ */
+function theme_oembedfield_formatter_oembed_default($element) {
+  $return = '';
+
+  if (!empty($element['#item']['url'])) {
+    /*$url = $element['#item']['url'];
+    $matches = array();
+    if ($provider = oembedcore_get_provider($url, $matches)) {
+      $embed = oembedcore_oembed_fetch($provider, $url, $matches);
+      $return = oembedcore_oembed_html($embed, $url);
+    }
+    if (empty($return)) {
+      $return  = l($element['#item']['display_url'], $url, $element['#item']);
+    }*/
+    return theme('oembed', $element['#item']['url'], $element['#item']['display_url']);
+  }
+
+  return $return;
+}

@@ -1,4 +1,10 @@
 <?php
+// $Id$
+
+/**
+ * @file
+ * Functions for the oEmbed filter
+ */
 
 function _oembed_filter_apply($text, $format) {
   global $_oembed_default_attributes;
