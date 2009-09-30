@@ -63,8 +63,3 @@ function oembed_filter($op, $delta = 0, $format = -1, $text = '') {
       return $text;
   }
 }
-
-function oembed_oembedprovider() {
-  module_load_include('inc', 'oembed');
-  return _oembed_oembedprovider();
-}

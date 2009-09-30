@@ -23,33 +23,13 @@ function oembedfield_field_formatter_info() {
  * Implementation of hook_theme().
  */
 function oembedfield_theme() {
+  $path = drupal_get_path('module', 'oembedfield') . '/theme';
   return array(
     'oembedfield_formatter_oembed_default' => array(
+      'template'  => 'oembedfield-formatter-oembed-default',
+      'file'      => 'oembedfield_theme.inc',
+      'path'      => $path,
       'arguments' => array('element' => NULL),
     ),
   );
-}
-
-/**
- * @defgroup "Theme Callbacks"
- * @{
- * @see oembedfield_theme().
- */
-function theme_oembedfield_formatter_oembed_default($element) {
-  $return = '';
-
-  if (!empty($element['#item']['url'])) {
-    /*$url = $element['#item']['url'];
-    $matches = array();
-    if ($provider = oembedcore_get_provider($url, $matches)) {
-      $embed = oembedcore_oembed_fetch($provider, $url, $matches);
-      $return = oembedcore_oembed_html($embed, $url);
-    }
-    if (empty($return)) {
-      $return  = l($element['#item']['display_url'], $url, $element['#item']);
-    }*/
-    return theme('oembed', $element['#item']['url'], $element['#item']['display_url']);
-  }
-
-  return $return;
 }
