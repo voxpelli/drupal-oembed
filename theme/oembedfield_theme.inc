@@ -19,8 +19,8 @@ function template_preprocess_oembedfield_formatter_oembed_default(&$vars) {
 
   if (!$embed) {
     $embed = (object) array(
-      'type' => 'link',
-      'url'  => $url,
+      'type'         => 'link',
+      'original_url' => $url,
     );
   }
   if (!isset($embed->title)) {
