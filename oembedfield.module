@@ -1,0 +1,35 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * OEmbed field core hooks and functions
+ */
+
+/**
+ * Implementation of hook_field_formatter_info().
+ */
+function oembedfield_field_formatter_info() {
+  return array(
+    'oembed_default' => array(
+      'label' => t('OEmbed'),
+      'field types' => array('link'),
+      'description' => t('Embeds links if possible - otherwise just links them.'),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function oembedfield_theme() {
+  $path = drupal_get_path('module', 'oembedfield') . '/theme';
+  return array(
+    'oembedfield_formatter_oembed_default' => array(
+      'template'  => 'oembedfield-formatter-oembed-default',
+      'file'      => 'oembedfield_theme.inc',
+      'path'      => $path,
+      'arguments' => array('element' => NULL),
+    ),
+  );
+}
