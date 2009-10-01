@@ -3,3 +3,4 @@ package = oEmbed
 name = oEmbed Core
 description = Common functionality for oEmbed client and provider
 core = 6.x
+dependencies[] = ctools
