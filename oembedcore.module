@@ -335,6 +335,17 @@ function oembedcore_oembed_html($embed, $url) {
 // Preset database info.
 
 /**
+ * Clear presets cache on admin/build/modules form.
+ */
+function oembedcore_form_system_modules_alter(&$form, $form_state) {
+  //Copied from imagecache - needed because other modules might contain presets which oembedfield uses and cck caches
+  //TODO: Extract this and move to oembedfield
+  if (module_exists('content')) {
+    content_clear_type_cache();
+  }
+}
+
+/**
  * Create a new preset with defaults appropriately set from schema.
  */
 function oembedcore_preset_new() {
@@ -370,6 +381,12 @@ function oembedcore_preset_load_all() {
 function oembedcore_preset_save(&$preset) {
   $update = (isset($preset->pid)) ? array('pid') : array();
   drupal_write_record('oembedcore_preset', $preset, $update);
+  // Clear the content.module cache (refreshes the list of formatters provided by oembedfield.module).
+  //TODO: Extract this and move to oembedfield
+  if (module_exists('content')) {
+    content_clear_type_cache();
+    drupal_rebuild_theme_registry();
+  }
   return $preset;
 }
 
@@ -378,6 +395,12 @@ function oembedcore_preset_save(&$preset) {
  */
 function oembedcore_preset_delete($preset) {
   db_query("DELETE FROM {oembedcore_preset} WHERE name = '%s' AND pid = %d", $preset->name, $preset->pid);
+  // Clear the content.module cache (refreshes the list of formatters provided by oembedfield.module).
+  //TODO: Extract this and move to oembedfield
+  if (module_exists('content')) {
+    content_clear_type_cache();
+    drupal_rebuild_theme_registry();
+  }
 }
 
 /**

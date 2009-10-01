@@ -204,6 +204,9 @@ function oembedcore_edit_form_preset_validate($form, &$form_state) {
       form_error($form['width'], t('Preset width must be number.'));
     }
   }
+  elseif ($form_state['values']['width'] < 0) {
+    form_error($form['width'], t('Preset width must be a non-negative number.'));
+  }
   if (!is_numeric($form_state['values']['height'])) {
     if (empty($form_state['values']['height'])) {
       form_set_value($form['height'], '0', $form_state);
@@ -211,6 +214,9 @@ function oembedcore_edit_form_preset_validate($form, &$form_state) {
     else {
       form_error($form['height'], t('Preset height must be number.'));
     }
+  }
+  elseif ($form_state['values']['height'] < 0) {
+    form_error($form['height'], t('Preset height must be a non-negative number.'));
   }
 }
 
@@ -307,6 +313,11 @@ function oembedcore_enable_preset($preset) {
   }
   ctools_include('export');
   ctools_export_set_status('oembedcore_preset', $preset->name, FALSE);
+  //TODO: Extract this and move to oembedfield
+  if (module_exists('content')) {
+    content_clear_type_cache();
+    drupal_rebuild_theme_registry();
+  }
   drupal_goto();
 }
 
@@ -319,5 +330,10 @@ function oembedcore_disable_preset($preset) {
   }
   ctools_include('export');
   ctools_export_set_status('oembedcore_preset', $preset->name, TRUE);
+  //TODO: Extract this and move to oembedfield
+  if (module_exists('content')) {
+    content_clear_type_cache();
+    drupal_rebuild_theme_registry();
+  }
   drupal_goto();
 }
