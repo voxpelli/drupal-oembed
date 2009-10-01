@@ -21,7 +21,7 @@ function oembed_init() {
  */
 function oembed_help($path, $arg) {
   switch ($path) {
-    case 'admin/help#filearchive':
+    case 'admin/help#oembed':
       return '<p>' . t('Adds an input filter for replacing oEmbed enabled URL:s with embedded content') . '</p>';
   }
 }
