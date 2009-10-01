@@ -52,6 +52,22 @@ function oembedcore_menu() {
     'page arguments' => array('oembedcore_export_preset', 3),
     'type'           => MENU_LOCAL_TASK,
   ) + $base;
+  $items['admin/build/oembed/%oembedcore_preset/delete'] = array(
+    'title'          => 'Delete preset',
+    'page callback'  => 'drupal_get_form',
+    'page arguments' => array('oembedcore_delete_confirm_preset', 3),
+    'type'           => MENU_CALLBACK,
+  ) + $base;
+  $items['admin/build/oembed/%oembedcore_preset/disable'] = array(
+    'page callback'  => 'oembedcore_disable_preset',
+    'page arguments' => array(3),
+    'type'           => MENU_CALLBACK,
+  ) + $base;
+  $items['admin/build/oembed/%oembedcore_preset/enable'] = array(
+    'page callback'  => 'oembedcore_enable_preset',
+    'page arguments' => array(3),
+    'type'           => MENU_CALLBACK,
+  ) + $base;
 
   return $items;
 }
@@ -361,7 +377,7 @@ function oembedcore_preset_save(&$preset) {
  * Remove a preset.
  */
 function oembedcore_preset_delete($preset) {
-  db_query("DELETE FROM {oembedcore_preset} WHERE name = '%s'", $preset->name);
+  db_query("DELETE FROM {oembedcore_preset} WHERE name = '%s' AND pid = %d", $preset->name, $preset->pid);
 }
 
 /**

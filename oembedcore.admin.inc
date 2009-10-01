@@ -25,16 +25,45 @@ function oembedcore_list_preset($js = NULL) {
   $rows = array();
 
   foreach ($presets as $preset) {
-    $operations = array(
-      array(
+    $operations = array();
+
+    if (empty($preset->disabled)) {
+      $operations[] = array(
         'title' => t('Edit'),
         'href'  => 'admin/build/oembed/' . $preset->name . '/edit',
-      ),
-      array(
+      );
+      $operations[] = array(
         'title' => t('Export'),
         'href'  => 'admin/build/oembed/' . $preset->name . '/export',
-      ),
-    );
+      );
+    }
+
+    if ($preset->export_type == (EXPORT_IN_CODE | EXPORT_IN_DATABASE)) {
+      $operations[] = array(
+        'title' => t('Revert'),
+        'href'  => 'admin/build/oembed/' . $preset->name . '/delete',
+      );
+    }
+    elseif ($preset->export_type != EXPORT_IN_CODE) {
+      $operations[] = array(
+        'title' => t('Delete'),
+        'href'  => 'admin/build/oembed/' . $preset->name . '/delete',
+      );
+    }
+    elseif (empty($preset->disabled)) {
+      $operations[] = array(
+        'title' => t('Disable'),
+        'href'  => 'admin/build/oembed/' . $preset->name . '/disable',
+        'query' => drupal_get_destination(),
+      );
+    }
+    else {
+      $operations[] = array(
+        'title' => t('Enable'),
+        'href'  => 'admin/build/oembed/' . $preset->name . '/enable',
+        'query' => drupal_get_destination(),
+      );
+    }
 
     $rows[$preset->name] = array(
       'data' => array(
@@ -59,7 +88,7 @@ function oembedcore_list_preset($js = NULL) {
           'class' => 'oembedcore-preset-operations',
         ),
       ),
-      'class' => 'oembedcore-preset-' . $preset->name,
+      'class' => 'oembedcore-preset-' . $preset->name . (!empty($preset->disabled) ? ' oembedcore-preset-disabled' : ''),
       //'title => ??
     );
   }
@@ -68,7 +97,7 @@ function oembedcore_list_preset($js = NULL) {
 
 //  $operations = '<div id="oembedcore-links" class="links">' . theme('links', $pages['operations']) . '</div>';
 
-//  drupal_add_css(drupal_get_path('module', 'page_manager') . '/css/page-manager.css');
+  drupal_add_css(drupal_get_path('module', 'oembedcore') . '/oembedcore.admin.css');
 
   return $table;
 }
@@ -229,4 +258,66 @@ function oembedcore_export_preset(&$form_state, $preset) {
     '#rows'          => $lines,
   );
   return $form;
+}
+
+/**
+ * Provide a form to confirm deletion of a preset.
+ */
+function oembedcore_delete_confirm_preset(&$form_state, $preset) {
+  if (!is_object($preset)) {
+    $preset = oembedcore_preset_load($preset);
+  }
+  if ($preset->export_type == (EXPORT_IN_CODE | EXPORT_IN_DATABASE)) {
+    $submit = t('Revert');
+  }
+  else if ($preset->export_type != EXPORT_IN_CODE) {
+    $submit = t('Delete');
+  }
+  else {
+    drupal_not_found();
+    die;
+  }
+  $form['name'] = array('#type' => 'value', '#value' => $preset->name);
+  $form['pid']  = array('#type' => 'value', '#value' => $preset->pid);
+  return confirm_form($form,
+    t('Are you sure you want to delete the preset "@name"?', array('@name' => $preset->name)),
+    !empty($_GET['destination']) ? $_GET['destination'] : 'admin/build/oembed',
+    t('This action cannot be undone.'),
+    $submit, t('Cancel')
+  );
+}
+
+/**
+ * Handle the submit button to delete a mini panel.
+ */
+function oembedcore_delete_confirm_preset_submit($form, &$form_state) {
+  $preset = oembedcore_preset_load($form_state['values']['name']);
+  if ($preset->pid == $form_state['values']['pid']) {
+    oembedcore_preset_delete($preset);
+    $form_state['redirect'] = 'admin/build/oembed';
+  }
+}
+
+/**
+ * Enable a default preset.
+ */
+function oembedcore_enable_preset($preset) {
+  if (!is_object($preset)) {
+    $preset = oembedcore_preset_load($preset);
+  }
+  ctools_include('export');
+  ctools_export_set_status('oembedcore_preset', $preset->name, FALSE);
+  drupal_goto();
+}
+
+/**
+ * Disable a default preset.
+ */
+function oembedcore_disable_preset($preset) {
+  if (!is_object($preset)) {
+    $preset = oembedcore_preset_load($preset);
+  }
+  ctools_include('export');
+  ctools_export_set_status('oembedcore_preset', $preset->name, TRUE);
+  drupal_goto();
 }

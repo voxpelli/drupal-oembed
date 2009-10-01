@@ -1,0 +1,5 @@
+/* $Id$ */
+
+#oembedcore-list-preset tr.oembedcore-preset-disabled {
+  color: #999;
+}
