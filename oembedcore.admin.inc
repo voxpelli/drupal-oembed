@@ -189,7 +189,7 @@ function oembedcore_edit_form_preset_validate($form, &$form_state) {
   if (!$form_state['values']['name']) {
     form_error($form['name'], t('Preset name is required.'));
   }
-  else if (preg_match("/[^A-Za-z0-9_]/", $form_state['values']['name'])) {
+  elseif (preg_match("/[^A-Za-z0-9_]/", $form_state['values']['name'])) {
     form_error($form['name'], t('Preset name must be alphanumeric or underscores only.'));
   }
   else {
@@ -286,7 +286,7 @@ function oembedcore_delete_confirm_preset(&$form_state, $preset) {
   if ($preset->export_type == (EXPORT_IN_CODE | EXPORT_IN_DATABASE)) {
     $submit = t('Revert');
   }
-  else if ($preset->export_type != EXPORT_IN_CODE) {
+  elseif ($preset->export_type != EXPORT_IN_CODE) {
     $submit = t('Delete');
   }
   else {
