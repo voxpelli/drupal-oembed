@@ -166,6 +166,12 @@ function oembedcore_edit_form_preset(&$form_state, $preset) {
     '#description'   => t('A maximum height in pixels of the embed or 0 for no maximum.'),
   );
 
+  $form['disable_title'] = array(
+    '#type'          => 'checkbox',
+    '#default_value' => !empty($preset->conf['disable_title']),
+    '#title'         => t('Disable title when other embeddable data is available'),
+  );
+
   $label = empty($preset->pid) ? t('Save and proceed') : t('Save');
   $form['submit'] = array(
     '#type'  => 'submit',
@@ -230,6 +236,10 @@ function oembedcore_edit_form_preset_submit($form, &$form_state) {
   $preset->name   = $form_state['values']['name'];
   $preset->width  = (int)$form_state['values']['width'];
   $preset->height = (int)$form_state['values']['height'];
+
+  $preset->conf = array(
+    'disable_title' => !empty($form_state['values']['disable_title']),
+  );
 
   if (empty($preset->pid)) {
     drupal_set_message(t('Your new preset %name has been saved.', array('%name' => $preset->name)));

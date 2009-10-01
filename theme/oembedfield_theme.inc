@@ -38,7 +38,10 @@ function template_preprocess_oembedfield_formatter_oembed_default(&$vars) {
       'original_url' => $url,
     );
   }
-  if (!isset($embed->title)) {
+  if ($embed->type != 'link' && !empty($preset->conf['disable_title'])) {
+    unset($embed->title);
+  }
+  elseif (!isset($embed->title)) {
     $embed->title = $element['#item']['display_url'];
   }
 
