@@ -9,7 +9,7 @@
 /**
  * Implementation of hook_install().
  */
-function _install() {
+function oembedcore_install() {
   drupal_install_schema('oembedcore');
 }
 
