@@ -1,0 +1,43 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Install file for OEmbed Field
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function oembedfield_install() {
+  drupal_load('module', 'content');
+  content_notify('install', 'oembedfield');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function oembedfield_uninstall() {
+  drupal_load('module', 'content');
+  content_notify('uninstall', 'oembedfield');
+}
+
+/**
+ * Implementation of hook_enable().
+ *
+ * Notify content module when this module is enabled.
+ */
+function oembedfield_enable() {
+  drupal_load('module', 'content');
+  content_notify('enable', 'oembedfield');
+}
+
+/**
+ * Implementation of hook_disable().
+ *
+ * Notify content module when this module is disabled.
+ */
+function oembedfield_disable() {
+  drupal_load('module', 'content');
+  content_notify('disable', 'oembedfield');
+}

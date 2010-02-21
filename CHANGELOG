@@ -1,0 +1,12 @@
+// $Id$
+
+oEmbed x.x-x.x, xxxx-xx-xx
+------------------------------
+
+oEmbed 6.x-0.5, 2010-02-21
+------------------------------
+by voxpelli: Added CCK field
+by voxpelli: Added hook for provider definitions
+by voxpelli: Improved theming
+by voxpelli: Added exportable presets/settings for CCK fields (not yet added
+  for the input filters)

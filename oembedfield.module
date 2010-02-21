@@ -1,0 +1,53 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * OEmbed field core hooks and functions
+ */
+
+/**
+ * Implementation of hook_field_formatter_info().
+ */
+function oembedfield_field_formatter_info() {
+  $formatters = array(
+    'oembed_default' => array(
+      'label' => t('OEmbed'),
+      'field types' => array('link'),
+      'description' => t('Embeds links if possible - otherwise just links them.'),
+    ),
+  );
+
+  foreach (oembedcore_preset_load_all() as $preset) {
+    if (empty($preset->disabled)) {
+      $formatters['oembed_' . $preset->name . '_default'] = array(
+        'label'       => t('OEmbed, preset @preset', array('@preset' => $preset->name)),
+        'field types' => array('link'),
+      );
+    }
+  }
+
+  return $formatters;
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function oembedfield_theme() {
+  $base = array(
+    'template'  => 'oembedfield-formatter-oembed-default',
+    'preprocess functions' => array('template_preprocess_oembedfield_formatter_oembed_default'),
+    'file'      => 'oembedfield_theme.inc',
+    'path'      => drupal_get_path('module', 'oembedfield') . '/theme',
+    'arguments' => array('element' => NULL),
+  );
+  $theme = array(
+    'oembedfield_formatter_oembed_default' => $base,
+  );
+  foreach (oembedcore_preset_load_all() as $preset) {
+    if (empty($preset->disabled)) {
+      $theme['oembedfield_formatter_oembed_' . $preset->name . '_default'] = $base;
+    }
+  }
+  return $theme;
+}
