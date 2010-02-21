@@ -13,7 +13,7 @@
  *  Optional. The response format to use.
  *  Defaults to $_GET['format'] or 'json', in that order.
  */
-function _oembedprovider_handle_request($format='') {
+function _oembedprovider_handle_request($format = '') {
   if (empty($format)) {
     $format = empty($_GET['format']) ? 'json' : $_GET['format'];
   }

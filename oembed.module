@@ -21,8 +21,8 @@ function oembed_init() {
  */
 function oembed_help($path, $arg) {
   switch ($path) {
-    case 'admin/help#filearchive':
-      return '<p>'. t('Adds an input filter for replacing oEmbed enabled URL:s with embedded content') .'</p>';
+    case 'admin/help#oembed':
+      return '<p>' . t('Adds an input filter for replacing oEmbed enabled URL:s with embedded content') . '</p>';
   }
 }
 
@@ -62,9 +62,4 @@ function oembed_filter($op, $delta = 0, $format = -1, $text = '') {
     default:
       return $text;
   }
-}
-
-function oembed_oembedprovider() {
-  module_load_include('inc', 'oembed');
-  return _oembed_oembedprovider();
 }

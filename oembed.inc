@@ -1,4 +1,10 @@
 <?php
+// $Id$
+
+/**
+ * @file
+ * Functions for the oEmbed filter
+ */
 
 function _oembed_filter_apply($text, $format) {
   global $_oembed_default_attributes;
@@ -31,51 +37,6 @@ function _oembed_filter_settings($format) {
     '#description' => t('The maximum height of an embed, isn\'t respected by all providers'),
   );
   return $form;
-}
-
-function _oembed_oembedprovider() {
-  $oembeddable = array(
-    'flickr' => array(
-      'scheme'   => array('http://*.flickr.com/*', 'http://flickr.com/*'),
-      'endpoint' => 'http://www.flickr.com/services/oembed/',
-    ),
-    'viddler' => array(
-      'scheme'   => 'http://*.viddler.com/*',
-      'endpoint' => 'http://lab.viddler.com/services/oembed/',
-    ),
-    'qik' => array(
-      'scheme'   => array('http://qik.com/video/*', 'http://qik.com/*'),
-      'endpoint' => 'http://qik.com/api/oembed.json',
-    ),
-    'revision3' => array(
-      'scheme'   => 'http://*.revision3.com/*',
-      'endpoint' => 'http://revision3.com/api/oembed/',
-    ),
-    'vimeo' => array(
-      'scheme'   => array('http://www.vimeo.com/*', 'http://www.vimeo.com/groups/*/*'),
-      'endpoint' => 'http://www.vimeo.com/api/oembed.json',
-    ),
-    'oohembed' => array(
-      'scheme'   => array(
-        'http://*.youtube.com/watch*',
-        'http://*.wikipedia.org/wiki/*',
-        'http://*.slideshare.net/*',
-        'http://*.imdb.com/title/tt*/',
-        'http://*.collegehumor.com/video:*',
-      ),
-      'endpoint' => 'http://oohembed.com/oohembed/',
-    ),
-  );
-
-  $providers = array();
-  foreach ($oembeddable as $site) {
-    foreach ((array)$site['scheme'] as $scheme) {
-      $providers[$scheme] = array(
-        'endpoint' => $site['endpoint'],
-      );
-    }
-  }
-  return $providers;
 }
 
 function _oembed_preg_parse($match) {
