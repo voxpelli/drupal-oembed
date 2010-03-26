@@ -2,7 +2,7 @@
 
 oEmbed x.x-x.x, xxxx-xx-xx
 ------------------------------
-by voxpelli: More flexible regular expression that allows attributes
+#692392 by Bohman, VoxPelli: Fixed surrounding styles prevent embedding
 by voxpelli: Use drupal_http_request()
 
 oEmbed 6.x-0.5, 2010-02-21
