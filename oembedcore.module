@@ -276,13 +276,14 @@ function oembedcore_oembed_fetch($provider, $url, $matches, $attributes = array(
     else {
       $fetch_url = $provider['endpoint'] . '?' . $query;
 
-      $response = @file_get_contents($fetch_url);
-      if (!$response) {
+      //TODO: Add alternative ways of fetching the content - like http client?
+      $response = drupal_http_request($fetch_url);
+      if ($response->error) {
         return NULL;
       }
-      $embed = json_decode($response);
+      $embed = json_decode($response->data);
       if (!is_object($embed)) {
-        $embed = new SimpleXMLElement($response);
+        $embed = new SimpleXMLElement($response->data);
         $embed = (object)get_object_vars($embed);
         if (!is_string($embed->title)) {
           $embed->title = '';
