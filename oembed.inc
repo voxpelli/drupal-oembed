@@ -12,7 +12,7 @@ function _oembed_filter_apply($text, $format) {
     'maxwidth'  => intval(variable_get('oembed_maxwidth_'  . $format, '')),
     'maxheight' => intval(variable_get('oembed_maxheight_' . $format, '')),
   );
-  $text = preg_replace_callback("`(^|<p>|<li>|<br\s*/?>|[ \n\r\t\(])((http://|https://|ftp://|mailto:|smb://|afp://|file://|gopher://|news://|ssl://|sslv2://|sslv3://|tls://|tcp://|udp://)([a-zA-Z0-9@:%_+*~#?&=.,/;-]*[a-zA-Z0-9@:%_+*~#&=/;-]))([.,?!]*?)(?=($|</p>|</li>|<br\s*/?>|[ \n\r\t\)]))`i", '_oembed_preg_parse', $text);
+  $text = preg_replace_callback("`(^|<p(?:\s[^>]*)*>|<li(?:\s[^>]*)*>|<br(?:\s[^>]*)*>|[ \n\r\t\(])((http://|https://|ftp://|mailto:|smb://|afp://|file://|gopher://|news://|ssl://|sslv2://|sslv3://|tls://|tcp://|udp://)([a-zA-Z0-9@:%_+*~#?&=.,/;-]*[a-zA-Z0-9@:%_+*~#&=/;-]))([.,?!]*?)(?=($|</p>|</li>|<br\s*/?>|[ \n\r\t\)]))`i", '_oembed_preg_parse', $text);
   unset($_oembed_default_attributes);
   return $text;
 }
