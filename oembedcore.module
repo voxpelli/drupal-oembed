@@ -26,46 +26,99 @@ function oembedcore_menu() {
 
   $items['admin/build/oembed'] = array(
     'title'          => 'OEmbed',
-    'description'    => 'Add, edit and remove oembed preset from the system.',
+    'description'    => 'Admin overview of OEmbed.',
     'page callback'  => 'oembedcore_list_preset',
   ) + $base;
-  $items['admin/build/oembed/list'] = array(
-    'title'          => 'List',
+
+  $items['admin/build/oembed/preset'] = array(
+    'title'          => 'Presets',
+    'description'    => 'Add, edit and remove oembed preset from the system.',
+    'page callback'  => 'oembedcore_list_preset',
+    'type'           => MENU_DEFAULT_LOCAL_TASK,
+  ) + $base;
+  $items['admin/build/oembed/preset/list'] = array(
+    'title'          => 'List presets',
     'page callback'  => 'oembedcore_list_preset',
     'type'           => MENU_DEFAULT_LOCAL_TASK,
     'weight'         => -10,
   ) + $base;
-  $items['admin/build/oembed/add'] = array(
+  $items['admin/build/oembed/preset/add'] = array(
     'title'          => 'Add preset',
     'page callback'  => 'oembedcore_add_preset',
     'type'           => MENU_LOCAL_TASK,
   ) + $base;
-  $items['admin/build/oembed/%oembedcore_preset/edit'] = array(
+  $items['admin/build/oembed/preset/%oembedcore_preset/edit'] = array(
     'title'          => 'Edit preset',
     'page callback'  => 'oembedcore_edit_preset',
-    'page arguments' => array(3),
+    'page arguments' => array(4),
     'type'           => MENU_LOCAL_TASK,
   ) + $base;
-  $items['admin/build/oembed/%oembedcore_preset/export'] = array(
+  $items['admin/build/oembed/preset/%oembedcore_preset/export'] = array(
     'title'          => 'Export preset',
     'page callback'  => 'drupal_get_form',
-    'page arguments' => array('oembedcore_export_preset', 3),
+    'page arguments' => array('oembedcore_export_preset', 4),
     'type'           => MENU_LOCAL_TASK,
   ) + $base;
-  $items['admin/build/oembed/%oembedcore_preset/delete'] = array(
+  $items['admin/build/oembed/preset/%oembedcore_preset/delete'] = array(
     'title'          => 'Delete preset',
     'page callback'  => 'drupal_get_form',
-    'page arguments' => array('oembedcore_delete_confirm_preset', 3),
+    'page arguments' => array('oembedcore_delete_confirm_preset', 4),
     'type'           => MENU_CALLBACK,
   ) + $base;
-  $items['admin/build/oembed/%oembedcore_preset/disable'] = array(
+  $items['admin/build/oembed/preset/%oembedcore_preset/disable'] = array(
     'page callback'  => 'oembedcore_disable_preset',
-    'page arguments' => array(3),
+    'page arguments' => array(4),
     'type'           => MENU_CALLBACK,
   ) + $base;
-  $items['admin/build/oembed/%oembedcore_preset/enable'] = array(
+  $items['admin/build/oembed/preset/%oembedcore_preset/enable'] = array(
     'page callback'  => 'oembedcore_enable_preset',
-    'page arguments' => array(3),
+    'page arguments' => array(4),
+    'type'           => MENU_CALLBACK,
+  ) + $base;
+
+  $items['admin/build/oembed/provider'] = array(
+    'title'          => 'Providers',
+    'description'    => 'Add, edit and remove oembed providers from the system.',
+    'page callback'  => 'oembedcore_list_provider',
+    'type'           => MENU_LOCAL_TASK,
+  ) + $base;
+  $items['admin/build/oembed/provider/list'] = array(
+    'title'          => 'List providers',
+    'page callback'  => 'oembedcore_list_provider',
+    'type'           => MENU_DEFAULT_LOCAL_TASK,
+    'weight'         => -10,
+  ) + $base;
+  $items['admin/build/oembed/provider/add'] = array(
+    'title'          => 'Add provider',
+    'page callback'  => 'oembedcore_add_provider',
+    'type'           => MENU_LOCAL_TASK,
+  ) + $base;
+  $items['admin/build/oembed/provider/%oembedcore_provider/edit'] = array(
+    'title'          => 'Edit provider',
+    'page callback'  => 'oembedcore_edit_provider',
+    'page arguments' => array(4),
+    'type'           => MENU_LOCAL_TASK,
+  ) + $base;
+  $items['admin/build/oembed/provider/%oembedcore_provider/export'] = array(
+    'title'          => 'Export provider',
+    'page callback'  => 'drupal_get_form',
+    'page arguments' => array('oembedcore_export_provider', 4),
+    'type'           => MENU_LOCAL_TASK,
+  ) + $base;
+  $items['admin/build/oembed/provider/%oembedcore_provider/delete'] = array(
+    'title'          => 'Delete provider',
+    'page callback'  => 'drupal_get_form',
+    'page arguments' => array('oembedcore_delete_confirm_provider', 4),
+    'type'           => MENU_CALLBACK,
+  ) + $base;
+  $items['admin/build/oembed/provider/%oembedcore_provider/disable'] = array(
+    'page callback'  => 'oembedcore_disable_provider',
+    'page arguments' => array(4),
+    'type'           => MENU_CALLBACK,
+  ) + $base;
+  $items['admin/build/oembed/provider/%oembedcore_provider/enable'] = array(
+    'page callback'  => 'oembedcore_enable_provider',
+    'page arguments' => array(4),
     'type'           => MENU_CALLBACK,
   ) + $base;
 
@@ -88,53 +141,72 @@ function oembedcore_theme() {
 }
 
 /**
- * Implementation of hook_oembedproviders().
+ * Implementation of hook_default_oembedcore_provider()
  */
-function oembedcore_oembedprovider() {
-  $oembeddable = array(
-    'flickr' => array(
-      'scheme'   => array('http://*.flickr.com/*', 'http://flickr.com/*'),
-      'endpoint' => 'http://www.flickr.com/services/oembed/',
-    ),
-    'viddler' => array(
-      'scheme'   => 'http://*.viddler.com/*',
-      'endpoint' => 'http://lab.viddler.com/services/oembed/',
-    ),
-    'qik' => array(
-      'scheme'   => array('http://qik.com/video/*', 'http://qik.com/*'),
-      'endpoint' => 'http://qik.com/api/oembed.json',
-    ),
-    'revision3' => array(
-      'scheme'   => 'http://*.revision3.com/*',
-      'endpoint' => 'http://revision3.com/api/oembed/',
-    ),
-    'vimeo' => array(
-      'scheme'   => array('http://www.vimeo.com/*', 'http://www.vimeo.com/groups/*/*'),
-      'endpoint' => 'http://www.vimeo.com/api/oembed.json',
-    ),
-    'youtube' => array(
-      'scheme'   => 'http://*.youtube.com/watch*',
-      'endpoint' => 'http://www.youtube.com/oembed',
-    ),
-    'oohembed' => array(
-      'scheme'   => array(
-        'http://*.wikipedia.org/wiki/*',
-        'http://*.slideshare.net/*',
-        'http://*.imdb.com/title/tt*/',
-        'http://*.collegehumor.com/video:*',
-      ),
-      'endpoint' => 'http://oohembed.com/oohembed/',
-    ),
-  );
-
+function oembedcore_default_oembedcore_provider() {
   $providers = array();
-  foreach ($oembeddable as $site) {
-    foreach ((array)$site['scheme'] as $scheme) {
-      $providers[$scheme] = array(
-        'endpoint' => $site['endpoint'],
-      );
-    }
-  }
+
+  $provider = new stdClass;
+  $provider->disabled = TRUE; /* Edit this to true to make a default provider disabled initially */
+  $provider->name = 'viddler';
+  $provider->title = 'Viddler';
+  $provider->endpoint = 'http://lab.viddler.com/services/oembed/';
+  $provider->scheme = 'http://*.viddler.com/*';
+  $providers['viddler'] = $provider;
+
+  $provider = new stdClass;
+  $provider->disabled = TRUE; /* Edit this to true to make a default provider disabled initially */
+  $provider->name = 'flickr';
+  $provider->title = 'Flickr';
+  $provider->endpoint = 'http://www.flickr.com/services/oembed/';
+  $provider->scheme = 'http://*.flickr.com/*
+http://flickr.com/*';
+  $providers['flickr'] = $provider;
+
+  $provider = new stdClass;
+  $provider->disabled = TRUE; /* Edit this to true to make a default provider disabled initially */
+  $provider->name = 'qik';
+  $provider->title = 'Qik';
+  $provider->endpoint = 'http://qik.com/api/oembed.json';
+  $provider->scheme = 'http://qik.com/video/*
+http://qik.com/*';
+  $providers['qik'] = $provider;
+
+  $provider = new stdClass;
+  $provider->disabled = TRUE; /* Edit this to true to make a default provider disabled initially */
+  $provider->name = 'revision3';
+  $provider->title = 'Revision3';
+  $provider->endpoint = 'http://revision3.com/api/oembed/';
+  $provider->scheme = 'http://*.revision3.com/*';
+  $providers['revision3'] = $provider;
+
+  $provider = new stdClass;
+  $provider->disabled = TRUE; /* Edit this to true to make a default provider disabled initially */
+  $provider->name = 'vimeo';
+  $provider->title = 'Vimeo';
+  $provider->endpoint = 'http://www.vimeo.com/api/oembed.json';
+  $provider->scheme = 'http://www.vimeo.com/*
+http://www.vimeo.com/groups/*/*';
+  $providers['vimeo'] = $provider;
+
+  $provider = new stdClass;
+  $provider->disabled = TRUE; /* Edit this to true to make a default provider disabled initially */
+  $provider->name = 'youtube';
+  $provider->title = 'YouTube';
+  $provider->endpoint = 'http://www.youtube.com/oembed';
+  $provider->scheme = 'http://*.youtube.com/watch*';
+  $providers['youtube'] = $provider;
+
+  $provider = new stdClass;
+  $provider->disabled = TRUE; /* Edit this to true to make a default provider disabled initially */
+  $provider->name = 'oohembed';
+  $provider->title = 'oohEmbed';
+  $provider->endpoint = 'http://oohembed.com/oohembed/';
+  $provider->scheme = 'http://*.wikipedia.org/wiki/*
+http://*.slideshare.net/*
+http://*.imdb.com/title/tt*/
+http://*.collegehumor.com/video:*';
+  $providers['oohembed'] = $provider;
 
   return $providers;
 }
@@ -206,9 +278,17 @@ function oembedcore_providers($url_host = NULL) {
         $ps = call_user_func($module . '_oembedprovider');
         foreach ($ps as $pattern => $info) {
           $host = _oembedcore_get_host($pattern);
-
           $regex_pattern = '/' . str_replace('\*', '(.+)', preg_quote($pattern, '/')) . '/';
           $providers[$host][$regex_pattern] = $info;
+        }
+      }
+      $provider_definitions = oembedcore_provider_load_all();
+      foreach ($provider_definitions as $provider_definition) {
+        $schemes = explode("\n", $provider_definition->scheme);
+        foreach ($schemes as $scheme) {
+          $host = _oembedcore_get_host($scheme);
+          $regex_pattern = '/' . str_replace('\*', '(.+)', preg_quote($scheme, '/')) . '/';
+          $providers[$host][$regex_pattern] = array('endpoint' => $provider_definition->endpoint);
         }
       }
       drupal_alter('oembedprovider', $providers);
@@ -421,6 +501,76 @@ function oembedcore_preset_list() {
   $presets = oembedcore_preset_load_all();
   foreach ($presets as $preset) {
     $return[$preset->name] = $preset->name;
+  }
+  return $return;
+}
+
+// --------------------------------------------------------------------------
+// Preset database info.
+
+/**
+ * Create a new provider with defaults appropriately set from schema.
+ */
+function oembedcore_provider_new() {
+  ctools_include('export');
+  return ctools_export_new_object('oembedcore_provider');
+}
+
+/**
+ * Load a single provider.
+ */
+function oembedcore_provider_load($name) {
+  ctools_include('export');
+  $result = ctools_export_load_object('oembedcore_provider', 'names', array($name));
+  if (isset($result[$name])) {
+    return $result[$name];
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * Load all providers.
+ */
+function oembedcore_provider_load_all() {
+  ctools_include('export');
+  return ctools_export_load_object('oembedcore_provider');
+}
+
+/**
+ * Write a provider to the database.
+ */
+function oembedcore_provider_save(&$provider) {
+  $update = (isset($provider->pid)) ? array('pid') : array();
+  drupal_write_record('oembedcore_provider', $provider, $update);
+  return $preset;
+}
+
+/**
+ * Remove a provider.
+ */
+function oembedcore_provider_delete($provider) {
+  db_query("DELETE FROM {oembedcore_provider} WHERE name = '%s' AND pid = %d", $provider->name, $provider->pid);
+}
+
+/**
+ * Export a provider.
+ */
+function oembedcore_provider_export($provider, $indent = '') {
+  ctools_include('export');
+  $output = ctools_export_object('oembedcore_provider', $provider, $indent);
+  return $output;
+}
+
+/**
+ * Lists all available providers.
+ */
+function oembedcore_provider_list() {
+  $return = array();
+  $providers = oembedcore_provider_load_all();
+  foreach ($providers as $provider) {
+    $return[$provider->name] = $provider->name;
   }
   return $return;
 }

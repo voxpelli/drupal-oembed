@@ -1,0 +1,6 @@
+; $Id$
+package = oEmbed
+name = oEmbed Embed.ly
+description = Provides definitions for all of Embed.ly:s providers
+core = 6.x
+dependencies[] = oembedcore

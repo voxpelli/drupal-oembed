@@ -2,8 +2,11 @@
 
 oEmbed x.x-x.x, xxxx-xx-xx
 ------------------------------
-by voxpelli: More flexible regular expression that allows attributes
+#692392 by Bohman, VoxPelli: Fixed surrounding styles prevent embedding
 by voxpelli: Use drupal_http_request()
+by voxpelli: Add exportable user definable providers
+by voxpelli: Add support for all of Embed.ly:s embeds
+by voxpelli: Fixed bug with default width and height being zero when they shouldn't be set at all
 
 oEmbed 6.x-0.5, 2010-02-21
 ------------------------------
