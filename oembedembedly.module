@@ -18,7 +18,8 @@ function oembedembedly_menu() {
   $items['admin/build/oembed/provider/embedly'] = array(
     'title'            => 'Embed.ly',
     'description'      => 'Settings for the Embed.ly provider.',
-    'page callback'    => 'oembedembedly_admin',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('oembedembedly_admin'),
     'type'             => MENU_LOCAL_TASK,
     'access arguments' => array('administer oembed presets'),
   );
@@ -68,7 +69,7 @@ function oembedembedly_default_oembedcore_provider() {
 function oembedembedly_admin() {
   $form['oembedembedly_default'] = array(
     '#type'          => 'radios',
-    '#title'         => t('Providers are by default'),
+    '#title'         => t('Providers enabled by default'),
     '#default_value' => variable_get('oembedembedly_default', TRUE),
     '#options'       => array(
       FALSE => t('Disabled'),
