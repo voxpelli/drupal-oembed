@@ -147,7 +147,7 @@ function oembedcore_default_oembedcore_provider() {
   $providers = array();
 
   $provider = new stdClass;
-  $provider->disabled = FALSE; /* Edit this to true to make a default provider disabled initially */
+  $provider->disabled = TRUE; /* Edit this to true to make a default provider disabled initially */
   $provider->name = 'viddler';
   $provider->title = 'Viddler';
   $provider->endpoint = 'http://lab.viddler.com/services/oembed/';
@@ -155,7 +155,7 @@ function oembedcore_default_oembedcore_provider() {
   $providers['viddler'] = $provider;
 
   $provider = new stdClass;
-  $provider->disabled = FALSE; /* Edit this to true to make a default provider disabled initially */
+  $provider->disabled = TRUE; /* Edit this to true to make a default provider disabled initially */
   $provider->name = 'flickr';
   $provider->title = 'Flickr';
   $provider->endpoint = 'http://www.flickr.com/services/oembed/';
@@ -164,7 +164,7 @@ http://flickr.com/*';
   $providers['flickr'] = $provider;
 
   $provider = new stdClass;
-  $provider->disabled = FALSE; /* Edit this to true to make a default provider disabled initially */
+  $provider->disabled = TRUE; /* Edit this to true to make a default provider disabled initially */
   $provider->name = 'qik';
   $provider->title = 'Qik';
   $provider->endpoint = 'http://qik.com/api/oembed.json';
@@ -173,7 +173,7 @@ http://qik.com/*';
   $providers['qik'] = $provider;
 
   $provider = new stdClass;
-  $provider->disabled = FALSE; /* Edit this to true to make a default provider disabled initially */
+  $provider->disabled = TRUE; /* Edit this to true to make a default provider disabled initially */
   $provider->name = 'revision3';
   $provider->title = 'Revision3';
   $provider->endpoint = 'http://revision3.com/api/oembed/';
@@ -181,7 +181,7 @@ http://qik.com/*';
   $providers['revision3'] = $provider;
 
   $provider = new stdClass;
-  $provider->disabled = FALSE; /* Edit this to true to make a default provider disabled initially */
+  $provider->disabled = TRUE; /* Edit this to true to make a default provider disabled initially */
   $provider->name = 'vimeo';
   $provider->title = 'Vimeo';
   $provider->endpoint = 'http://www.vimeo.com/api/oembed.json';
@@ -190,7 +190,7 @@ http://www.vimeo.com/groups/*/*';
   $providers['vimeo'] = $provider;
 
   $provider = new stdClass;
-  $provider->disabled = FALSE; /* Edit this to true to make a default provider disabled initially */
+  $provider->disabled = TRUE; /* Edit this to true to make a default provider disabled initially */
   $provider->name = 'youtube';
   $provider->title = 'YouTube';
   $provider->endpoint = 'http://www.youtube.com/oembed';
@@ -198,7 +198,7 @@ http://www.vimeo.com/groups/*/*';
   $providers['youtube'] = $provider;
 
   $provider = new stdClass;
-  $provider->disabled = FALSE; /* Edit this to true to make a default provider disabled initially */
+  $provider->disabled = TRUE; /* Edit this to true to make a default provider disabled initially */
   $provider->name = 'oohembed';
   $provider->title = 'oohEmbed';
   $provider->endpoint = 'http://oohembed.com/oohembed/';
