@@ -185,8 +185,10 @@ http://qik.com/*';
   $provider->name = 'vimeo';
   $provider->title = 'Vimeo';
   $provider->endpoint = 'http://www.vimeo.com/api/oembed.json';
-  $provider->scheme = 'http://www.vimeo.com/*
-http://www.vimeo.com/groups/*/*';
+  $provider->scheme = 'http://www.vimeo.com/groups/*/videos/*
+http://www.vimeo.com/*
+http://vimeo.com/groups/*/videos/*
+http://vimeo.com/*';
   $providers['vimeo'] = $provider;
 
   $provider = new stdClass;
