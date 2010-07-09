@@ -55,7 +55,7 @@ function oembedembedly_default_oembedcore_provider() {
     foreach ($json as $embedly_provider) {
       $provider = new stdClass;
       $provider->disabled = !variable_get('oembedembedly_default', TRUE);
-      $provider->name = $embedly_provider->name;
+      $provider->name = 'oembedembedly_' . $embedly_provider->name;
       $provider->title = $embedly_provider->displayname . ' (Embed.ly)';
       $provider->endpoint = 'http://api.embed.ly/v1/api/oembed';
       $provider->scheme = implode("\n", $embedly_provider->regex);

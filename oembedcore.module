@@ -141,7 +141,7 @@ function oembedcore_theme() {
 }
 
 /**
- * Implementation of hook_default_oembedcore_provider()
+ * Implementation of hook_default_oembedcore_provider().
  */
 function oembedcore_default_oembedcore_provider() {
   $providers = array();
@@ -185,8 +185,10 @@ http://qik.com/*';
   $provider->name = 'vimeo';
   $provider->title = 'Vimeo';
   $provider->endpoint = 'http://www.vimeo.com/api/oembed.json';
-  $provider->scheme = 'http://www.vimeo.com/*
-http://www.vimeo.com/groups/*/*';
+  $provider->scheme = 'http://www.vimeo.com/groups/*/videos/*
+http://www.vimeo.com/*
+http://vimeo.com/groups/*/videos/*
+http://vimeo.com/*';
   $providers['vimeo'] = $provider;
 
   $provider = new stdClass;
@@ -196,17 +198,6 @@ http://www.vimeo.com/groups/*/*';
   $provider->endpoint = 'http://www.youtube.com/oembed';
   $provider->scheme = 'http://*.youtube.com/watch*';
   $providers['youtube'] = $provider;
-
-  $provider = new stdClass;
-  $provider->disabled = TRUE; /* Edit this to true to make a default provider disabled initially */
-  $provider->name = 'oohembed';
-  $provider->title = 'oohEmbed';
-  $provider->endpoint = 'http://oohembed.com/oohembed/';
-  $provider->scheme = 'http://*.wikipedia.org/wiki/*
-http://*.slideshare.net/*
-http://*.imdb.com/title/tt*/
-http://*.collegehumor.com/video:*';
-  $providers['oohembed'] = $provider;
 
   return $providers;
 }
@@ -284,11 +275,13 @@ function oembedcore_providers($url_host = NULL) {
       }
       $provider_definitions = oembedcore_provider_load_all();
       foreach ($provider_definitions as $provider_definition) {
-        $schemes = explode("\n", $provider_definition->scheme);
-        foreach ($schemes as $scheme) {
-          $host = _oembedcore_get_host($scheme);
-          $regex_pattern = '/' . str_replace('\*', '(.+)', preg_quote($scheme, '/')) . '/';
-          $providers[$host][$regex_pattern] = array('endpoint' => $provider_definition->endpoint);
+        if (!$provider_definition->disabled) {
+          $schemes = explode("\n", $provider_definition->scheme);
+          foreach ($schemes as $scheme) {
+            $host = _oembedcore_get_host($scheme);
+            $regex_pattern = '/' . str_replace('\*', '(.+)', preg_quote($scheme, '/')) . '/';
+            $providers[$host][$regex_pattern] = array('endpoint' => $provider_definition->endpoint);
+          }
         }
       }
       drupal_alter('oembedprovider', $providers);
