@@ -141,7 +141,7 @@ function oembedcore_theme() {
 }
 
 /**
- * Implementation of hook_default_oembedcore_provider()
+ * Implementation of hook_default_oembedcore_provider().
  */
 function oembedcore_default_oembedcore_provider() {
   $providers = array();
