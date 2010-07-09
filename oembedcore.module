@@ -199,17 +199,6 @@ http://vimeo.com/*';
   $provider->scheme = 'http://*.youtube.com/watch*';
   $providers['youtube'] = $provider;
 
-  $provider = new stdClass;
-  $provider->disabled = TRUE; /* Edit this to true to make a default provider disabled initially */
-  $provider->name = 'oohembed';
-  $provider->title = 'oohEmbed';
-  $provider->endpoint = 'http://oohembed.com/oohembed/';
-  $provider->scheme = 'http://*.wikipedia.org/wiki/*
-http://*.slideshare.net/*
-http://*.imdb.com/title/tt*/
-http://*.collegehumor.com/video:*';
-  $providers['oohembed'] = $provider;
-
   return $providers;
 }
 
