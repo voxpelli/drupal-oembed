@@ -284,11 +284,13 @@ function oembedcore_providers($url_host = NULL) {
       }
       $provider_definitions = oembedcore_provider_load_all();
       foreach ($provider_definitions as $provider_definition) {
-        $schemes = explode("\n", $provider_definition->scheme);
-        foreach ($schemes as $scheme) {
-          $host = _oembedcore_get_host($scheme);
-          $regex_pattern = '/' . str_replace('\*', '(.+)', preg_quote($scheme, '/')) . '/';
-          $providers[$host][$regex_pattern] = array('endpoint' => $provider_definition->endpoint);
+        if (!$provider_definition->disabled) {
+          $schemes = explode("\n", $provider_definition->scheme);
+          foreach ($schemes as $scheme) {
+            $host = _oembedcore_get_host($scheme);
+            $regex_pattern = '/' . str_replace('\*', '(.+)', preg_quote($scheme, '/')) . '/';
+            $providers[$host][$regex_pattern] = array('endpoint' => $provider_definition->endpoint);
+          }
         }
       }
       drupal_alter('oembedprovider', $providers);
