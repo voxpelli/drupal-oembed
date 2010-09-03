@@ -91,16 +91,30 @@ function _oembedprovider_result($type, $props) {
  * @param array $matches
  */
 function _oembedprovider_node_provider($provider, $url, $matches) {
+  static $block_endless_recursion = array();
+
+  $result = FALSE;
+
   $nid = $matches[1];
-  $node = node_load($nid);
-  $author = user_load(array('uid' => $node->uid));
-  //TODO: The title and author data is currently returned as part of the rich-text html as well - this makes some clients show duplicate title and/or author information
-  return _oembedprovider_result('rich', array(
-    'html' => theme('oembed_node', $node),
-    'title' => $node->title,
-    'author_name' => $author->name,
-    'author_url' => url('user/' . $author->uid, array('absolute' => TRUE)),
-  ));
+  if (!isset($block_endless_recursion[$nid])) {
+    $block_endless_recursion[$nid] = TRUE;
+
+    $node = node_load($nid);
+    if ($node) {
+      $author = user_load(array('uid' => $node->uid));
+      //TODO: The title and author data is currently returned as part of the rich-text html as well - this makes some clients show duplicate title and/or author information
+      $result = _oembedprovider_result('rich', array(
+        'html' => theme('oembed_node', $node),
+        'title' => $node->title,
+        'author_name' => $author->name,
+        'author_url' => url('user/' . $author->uid, array('absolute' => TRUE)),
+      ));
+    }
+
+    unset($block_endless_recursion[$nid]);
+  }
+
+  return $result;
 }
 
 /**
