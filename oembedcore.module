@@ -546,6 +546,7 @@ function oembedcore_provider_load_all() {
 function oembedcore_provider_save(&$provider) {
   $update = (isset($provider->pid)) ? array('pid') : array();
   drupal_write_record('oembedcore_provider', $provider, $update);
+  cache_clear_all('oembedcore:providers');
   return $preset;
 }
 
@@ -554,6 +555,7 @@ function oembedcore_provider_save(&$provider) {
  */
 function oembedcore_provider_delete($provider) {
   db_query("DELETE FROM {oembedcore_provider} WHERE name = '%s' AND pid = %d", $provider->name, $provider->pid);
+  cache_clear_all('oembedcore:providers');
 }
 
 /**

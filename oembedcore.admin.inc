@@ -633,6 +633,7 @@ function oembedcore_enable_provider($provider) {
   }
   ctools_include('export');
   ctools_export_set_status('oembedcore_provider', $provider->name, FALSE);
+  cache_clear_all('oembedcore:providers');
   drupal_goto();
 }
 
@@ -645,5 +646,6 @@ function oembedcore_disable_provider($provider) {
   }
   ctools_include('export');
   ctools_export_set_status('oembedcore_provider', $provider->name, TRUE);
+  cache_clear_all('oembedcore:providers');
   drupal_goto();
 }
