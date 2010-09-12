@@ -30,10 +30,9 @@ function _oembedprovider_handle_request($format = '') {
   // Check that we got a url
   if (empty($_GET['url'])) {
     header('HTTP/1.0 406 Not acceptable. The url parameter is required.');
-    print call_user_func($f['callback'], _oembedprovider_result('rich', array(
-      'title' => t('Not acceptable'),
+    print call_user_func($f['callback'], _oembedprovider_result('link', array(
+      'title' => t('The url parameter is required'),
       'error' => 1,
-      'html' => t('The url parameter is required'),
     )));
     die;
   }
@@ -53,15 +52,23 @@ function _oembedprovider_handle_request($format = '') {
     }
 
     $data = oembedcore_oembed_fetch($provider, $url, $matches, $attributes);
-    print call_user_func($f['callback'], $data);
-    exit;
+    if ($data) {
+      print call_user_func($f['callback'], $data);
+    }
+    else {
+      header('HTTP/1.0 404 Not found.');
+      print call_user_func($f['callback'], _oembedprovider_result('link', array(
+        'title' => t('Could not fetch an embed for this url'),
+        'error' => 1,
+      )));
+    }
+    die;
   }
   else {
     header('HTTP/1.0 404 Not found.');
     print call_user_func($f['callback'], _oembedprovider_result('rich', array(
-      'title' => t('Not found'),
+      'title' => t('Could not find a provider that supports this url'),
       'error' => 1,
-      'html' => t('Could not find a provider that supports this url'),
     )));
     die;
   }
@@ -91,16 +98,30 @@ function _oembedprovider_result($type, $props) {
  * @param array $matches
  */
 function _oembedprovider_node_provider($provider, $url, $matches) {
+  static $block_endless_recursion = array();
+
+  $result = FALSE;
+
   $nid = $matches[1];
-  $node = node_load($nid);
-  $author = user_load(array('uid' => $node->uid));
-  //TODO: The title and author data is currently returned as part of the rich-text html as well - this makes some clients show duplicate title and/or author information
-  return _oembedprovider_result('rich', array(
-    'html' => theme('oembed_node', $node),
-    'title' => $node->title,
-    'author_name' => $author->name,
-    'author_url' => url('user/' . $author->uid, array('absolute' => TRUE)),
-  ));
+  if (!isset($block_endless_recursion[$nid])) {
+    $block_endless_recursion[$nid] = TRUE;
+
+    $node = node_load($nid);
+    if ($node) {
+      $author = user_load(array('uid' => $node->uid));
+      //TODO: The title and author data is currently returned as part of the rich-text html as well - this makes some clients show duplicate title and/or author information
+      $result = _oembedprovider_result('rich', array(
+        'html' => theme('oembed_node', $node),
+        'title' => $node->title,
+        'author_name' => $author->name,
+        'author_url' => url('user/' . $author->uid, array('absolute' => TRUE)),
+      ));
+    }
+
+    unset($block_endless_recursion[$nid]);
+  }
+
+  return $result;
 }
 
 /**

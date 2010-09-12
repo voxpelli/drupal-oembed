@@ -7,6 +7,10 @@ by voxpelli: Coding style fix
 by voxpelli: Removed oohEmbed provider
 by voxpelli: Updated scheme for Vimeo
 by voxpelli: Prefixed provider names of Embedly providers
+by voxpelli: Prevented endless recursion in oEmbed Provider
+by voxpelli: Improved responses for failed request to oEmbed Provider
+#890504 by bangpound: Fixed unnecessary saving of provider cache
+#890496 by bangpound: Fixed adding, enabling etc. of a provider not clearing the provider cache
 
 oEmbed 6.x-0.6, 2010-05-28
 ------------------------------

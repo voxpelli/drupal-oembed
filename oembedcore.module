@@ -288,8 +288,8 @@ function oembedcore_providers($url_host = NULL) {
       foreach ($providers as $host => &$patterns) {
         uksort($patterns, '_oembedcore_specificity_compare');
       }
+      cache_set($cache_key, $providers);
     }
-    cache_set($cache_key, $providers);
   }
 
   if ($url_host) {
@@ -329,6 +329,9 @@ function oembedcore_oembed_data($url, $attributes = array()) {
 
 function oembedcore_oembed_fetch($provider, $url, $matches, $attributes = array()) {
   global $_oembed_default_attributes;
+
+  $embed = FALSE;
+
   if (!empty($_oembed_default_attributes)) {
     $attributes = array_merge($_oembed_default_attributes, $attributes);
   }
@@ -344,31 +347,37 @@ function oembedcore_oembed_fetch($provider, $url, $matches, $attributes = array(
   }
   else {
     if (!empty($provider['callback'])) {
-      $embed = (object)call_user_func($provider['callback'], $provider, $url, $matches, $attributes);
+      $embed = call_user_func($provider['callback'], $provider, $url, $matches, $attributes);
+      if ($embed) {
+        $embed = (object)$embed;
+      }
     }
     else {
       $fetch_url = $provider['endpoint'] . '?' . $query;
 
       //TODO: Add alternative ways of fetching the content - like http client?
       $response = drupal_http_request($fetch_url);
-      if ($response->error) {
-        return NULL;
-      }
-      $embed = json_decode($response->data);
-      if (!is_object($embed)) {
-        $embed = new SimpleXMLElement($response->data);
-        $embed = (object)get_object_vars($embed);
-        if (!is_string($embed->title)) {
-          $embed->title = '';
+      if (!$response->error) {
+        $embed = json_decode($response->data);
+        if (!is_object($embed)) {
+          //TODO: Better error handling here
+          $embed = new SimpleXMLElement($response->data);
+          $embed = (object)get_object_vars($embed);
+          if (!is_string($embed->title)) {
+            $embed->title = '';
+          }
         }
       }
     }
 
-    $embed->original_url = $url;
+    if ($embed) {
+      $embed->original_url = $url;
+    }
 
     $max_age = isset($embed->cache_age) ? intval($embed->cache_age) : empty($provider['callback']) ? 600 : 60;
     cache_set($cache_key, $embed, 'cache', time() + $max_age);
   }
+
   return $embed;
 }
 
@@ -537,6 +546,7 @@ function oembedcore_provider_load_all() {
 function oembedcore_provider_save(&$provider) {
   $update = (isset($provider->pid)) ? array('pid') : array();
   drupal_write_record('oembedcore_provider', $provider, $update);
+  cache_clear_all('oembedcore:providers');
   return $preset;
 }
 
@@ -545,6 +555,7 @@ function oembedcore_provider_save(&$provider) {
  */
 function oembedcore_provider_delete($provider) {
   db_query("DELETE FROM {oembedcore_provider} WHERE name = '%s' AND pid = %d", $provider->name, $provider->pid);
+  cache_clear_all('oembedcore:providers');
 }
 
 /**
