@@ -288,8 +288,8 @@ function oembedcore_providers($url_host = NULL) {
       foreach ($providers as $host => &$patterns) {
         uksort($patterns, '_oembedcore_specificity_compare');
       }
+      cache_set($cache_key, $providers);
     }
-    cache_set($cache_key, $providers);
   }
 
   if ($url_host) {
