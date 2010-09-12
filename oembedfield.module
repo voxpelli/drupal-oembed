@@ -36,7 +36,6 @@ function oembedfield_field_formatter_info() {
 function oembedfield_theme() {
   $base = array(
     'template'  => 'oembedfield-formatter-oembed-default',
-    'preprocess functions' => array('template_preprocess_oembedfield_formatter_oembed_default'),
     'file'      => 'oembedfield_theme.inc',
     'path'      => drupal_get_path('module', 'oembedfield') . '/theme',
     'arguments' => array('element' => NULL),
@@ -46,7 +45,9 @@ function oembedfield_theme() {
   );
   foreach (oembedcore_preset_load_all() as $preset) {
     if (empty($preset->disabled)) {
-      $theme['oembedfield_formatter_oembed_' . $preset->name . '_default'] = $base;
+      $hook = 'oembedfield_formatter_oembed_' . $preset->name . '_default';
+      $theme[$hook] = $base;
+      $theme[$hook]['original hook'] = 'oembedfield_formatter_oembed_default';
     }
   }
   return $theme;
