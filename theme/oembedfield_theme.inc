@@ -33,6 +33,7 @@ function template_preprocess_oembedfield_formatter_oembed_default(&$vars) {
   }
 
   $embed = oembedcore_oembed_data($url, $attributes);
+  $vars['oembed_data'] = $embed;
 
   if (!$embed) {
     $embed = (object) array(
