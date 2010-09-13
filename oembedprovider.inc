@@ -143,13 +143,13 @@ function _oembedprovider_formats_json($data) {
  * XML formatter
  */
 function _oembedprovider_formats_xml($data) {
-  $doc = new DomDocument('1.0', 'utf-8');
-  $oembed = $doc->createElement('oembed');
-  $doc->appendChild($oembed);
   foreach ($data as $key => $value) {
-    $e = $doc->createElement($key);
-    $e->appendChild($doc->createTextNode($value));
-    $oembed->appendChild($e);
+    $doc[] = array(
+      'key' => $key,
+      'value' => $value,
+    );
   }
-  return $doc->saveXml();
+  $output = '<?xml version="1.0" encoding="utf-8"?>';
+  $output .= format_xml_elements(array('oembed' => $doc));
+  return $output;
 }
