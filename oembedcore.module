@@ -184,7 +184,7 @@ function oembedcore_oembed_fetch($provider, $url, $matches, $attributes = array(
 
       //TODO: Add alternative ways of fetching the content - like http client?
       $response = drupal_http_request($fetch_url);
-      if (!$response->error) {
+      if (!isset($response->error)) {
         $embed = json_decode($response->data);
         if (!is_object($embed)) {
           //TODO: Better error handling here
