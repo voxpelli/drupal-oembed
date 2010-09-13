@@ -32,9 +32,14 @@ function oembedcore_schema() {
 function _oembedcore_preset_schema_1() {
   return array(
     'export' => array(
-      'identifier'            => 'preset',
-      'export callback'       => 'oembedcore_preset_export',
-      'list callback'         => 'oembedcore_preset_list',
+      'primary key' => 'pid',
+      'default hook' => 'default_oembed_preset',
+      'api' => array(
+        'owner' => 'oembedcore',
+        'api' => 'default_oembed_preset',
+        'minimum_version' => 1,
+        'current_version' => 1,
+      ),
     ),
     'fields' => array(
       'pid' => array(
@@ -68,7 +73,9 @@ function _oembedcore_preset_schema_1() {
         'description'    => 'Serialized configuration of the embed, if needed.',
         'not null'       => TRUE,
         'serialize'      => TRUE,
-        'object default' => array(),
+        'object default' => array(
+          'disable_title' => 1,
+        ),
       ),
     ),
     'primary key' => array('pid'),
@@ -81,9 +88,14 @@ function _oembedcore_preset_schema_1() {
 function _oembedcore_provider_schema_1() {
   return array(
     'export' => array(
-      'identifier'      => 'provider',
-      'export callback' => 'oembedcore_provider_export',
-      'list callback'   => 'oembedcore_provider_list',
+      'primary key' => 'pid',
+      'default hook' => 'default_oembed_provider',
+      'api' => array(
+        'owner' => 'oembedcore',
+        'api' => 'default_oembed_provider',
+        'minimum_version' => 1,
+        'current_version' => 1,
+      ),
     ),
     'fields' => array(
       'pid' => array(

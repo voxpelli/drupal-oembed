@@ -7,6 +7,7 @@
  */
 
 function template_preprocess_oembedfield_formatter_oembed_default(&$vars) {
+  ctools_include('export');
   $element = $vars['element'];
 
   $vars['embed'] = '';
@@ -21,7 +22,7 @@ function template_preprocess_oembedfield_formatter_oembed_default(&$vars) {
 
   $attributes = array();
   $url        = url($element['#item']['url'], $element['#item']);
-  $preset     = oembedcore_preset_load($presetname);
+  $preset     = ctools_export_crud_load('oembedcore_preset', $presetname);
   if (!empty($preset)) {
     if ($preset->width > 0) {
       $attributes['maxwidth'] = $preset->width;

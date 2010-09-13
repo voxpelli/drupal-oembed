@@ -10,6 +10,7 @@
  * Implementation of hook_field_formatter_info().
  */
 function oembedfield_field_formatter_info() {
+  ctools_include('export');
   $formatters = array(
     'oembed_default' => array(
       'label' => t('OEmbed'),
@@ -18,7 +19,7 @@ function oembedfield_field_formatter_info() {
     ),
   );
 
-  foreach (oembedcore_preset_load_all() as $preset) {
+  foreach (ctools_export_crud_load_all('oembedcore_preset') as $preset) {
     if (empty($preset->disabled)) {
       $formatters['oembed_' . $preset->name . '_default'] = array(
         'label'       => t('OEmbed, preset @preset', array('@preset' => $preset->name)),
@@ -34,6 +35,7 @@ function oembedfield_field_formatter_info() {
  * Implementation of hook_theme().
  */
 function oembedfield_theme() {
+  ctools_include('export');
   $base = array(
     'template'  => 'oembedfield-formatter-oembed-default',
     'file'      => 'oembedfield_theme.inc',
@@ -43,7 +45,7 @@ function oembedfield_theme() {
   $theme = array(
     'oembedfield_formatter_oembed_default' => $base,
   );
-  foreach (oembedcore_preset_load_all() as $preset) {
+  foreach (ctools_export_crud_load_all('oembedcore_preset') as $preset) {
     if (empty($preset->disabled)) {
       $hook = 'oembedfield_formatter_oembed_' . $preset->name . '_default';
       $theme[$hook] = $base;
