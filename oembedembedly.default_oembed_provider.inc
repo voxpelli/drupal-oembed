@@ -6,22 +6,13 @@
 function oembedembedly_default_oembed_provider() {
   $providers = array();
 
-  $cache = cache_get('oembedly');
+  $json = drupal_http_request('http://api.embed.ly/v1/api/services');
 
-  if ($cache && isset($cache->data)) {
-    $json = $cache->data;
+  if ($json->code == 200) {
+    $json = json_decode($json->data);
   }
   else {
-    $json = drupal_http_request('http://api.embed.ly/v1/api/services');
-
-    if ($json->code == 200) {
-      $json = json_decode($json->data);
-    }
-    else {
-      $json = FALSE;
-    }
-
-    cache_set('oembedly', $json, 'cache', time() + 3600 * ($json ? 24 : 6));
+    $json = FALSE;
   }
 
   if (is_array($json)) {
