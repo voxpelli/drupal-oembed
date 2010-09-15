@@ -33,7 +33,7 @@ class oembed_preset_ui extends ctools_export_ui {
 
     // Since items in our settings are not in the schema, we have to do these
     // manually:
-    //$form_state['item']->conf['disable_title'] = $form_state['values']['disable_title'];
+    $form_state['item']->conf['disable_title'] = $form_state['values']['disable_title'];
   }
 
 
