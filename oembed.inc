@@ -55,7 +55,9 @@ function _oembed_resolve_link($match, $prefix, $suffix) {
   $matches = array();
   if ($provider = oembedcore_get_provider($url, $matches)) {
     $embed = oembedcore_oembed_fetch($provider, $url, $matches);
-    $return = oembedcore_oembed_html($embed, $url);
+    if ($embed) {
+      $return = oembedcore_oembed_html($embed, $url);
+    }
   }
   if (empty($return)) {
     $return  = l($match, $url, array('absolute' => TRUE));

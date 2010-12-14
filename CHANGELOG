@@ -1,5 +1,9 @@
 // $Id$
 
+oEmbed 6.x-0.8, 2010-12-14
+------------------------------
+by voxpelli: Security fix for access bypass
+
 oEmbed 6.x-0.7, 2010-10-20
 ------------------------------
 by voxpelli: Disabled providers wasn't really disabled

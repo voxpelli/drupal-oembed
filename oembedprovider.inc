@@ -107,7 +107,7 @@ function _oembedprovider_node_provider($provider, $url, $matches) {
     $block_endless_recursion[$nid] = TRUE;
 
     $node = node_load($nid);
-    if ($node) {
+    if ($node && node_access('view', $node, drupal_anonymous_user())) {
       $author = user_load(array('uid' => $node->uid));
       //TODO: The title and author data is currently returned as part of the rich-text html as well - this makes some clients show duplicate title and/or author information
       $result = _oembedprovider_result('rich', array(
