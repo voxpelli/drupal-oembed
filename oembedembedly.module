@@ -46,6 +46,10 @@ function oembedembedly_default_oembedcore_provider() {
     }
 
     cache_set('oembedly', $json, 'cache', time() + 3600 * ($json ? 24 : 6));
+
+    if (variable_get('oembedembedly_default', TRUE)) {
+      cache_clear_all('oembedcore:providers', 'cache');
+    }
   }
 
   if (is_array($json)) {
