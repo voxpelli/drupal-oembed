@@ -1,5 +1,10 @@
 // $Id$
 
+oEmbed 6.x-0.9, xxxx-xx-xx
+------------------------------
+#966122 by voxpelli: Cache clearing calls was missing table
+#992124 by voxpelli: Improved the handling of invalid oEmbed responses
+
 oEmbed 6.x-0.8, 2010-12-14
 ------------------------------
 by voxpelli: Security fix for access bypass
