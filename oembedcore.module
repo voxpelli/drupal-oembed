@@ -360,13 +360,25 @@ function oembedcore_oembed_fetch($provider, $url, $matches, $attributes = array(
       if (!$response->error) {
         $embed = json_decode($response->data);
         if (!is_object($embed)) {
-          //TODO: Better error handling here
-          $embed = new SimpleXMLElement($response->data);
-          $embed = (object)get_object_vars($embed);
-          if (!is_string($embed->title)) {
-            $embed->title = '';
+          try {
+            $embed = @new SimpleXMLElement($response->data);
+            $embed = (object)get_object_vars($embed);
+            if (!is_string($embed->title)) {
+              $embed->title = '';
+            }
+          }
+          catch (Exception $e) {
+            watchdog('oembed', 'Could not parse response from %url.', array('%url' => $fetch_url), WATCHDOG_ERROR);
           }
         }
+
+        if (empty($embed->version) || empty($embed->type) || intval($embed->version) != 1) {
+          $embed = FALSE;
+          watchdog('oembed', 'Response from %url not a valid oEmbed response.', array('%url' => $fetch_url), WATCHDOG_ERROR);
+        }
+      }
+      else {
+        watchdog('oembed', 'Error fetching data from %url.', array('%url' => $fetch_url), WATCHDOG_ERROR);
       }
     }
 
@@ -546,7 +558,7 @@ function oembedcore_provider_load_all() {
 function oembedcore_provider_save(&$provider) {
   $update = (isset($provider->pid)) ? array('pid') : array();
   drupal_write_record('oembedcore_provider', $provider, $update);
-  cache_clear_all('oembedcore:providers');
+  cache_clear_all('oembedcore:providers', 'cache');
   return $preset;
 }
 
@@ -555,7 +567,7 @@ function oembedcore_provider_save(&$provider) {
  */
 function oembedcore_provider_delete($provider) {
   db_query("DELETE FROM {oembedcore_provider} WHERE name = '%s' AND pid = %d", $provider->name, $provider->pid);
-  cache_clear_all('oembedcore:providers');
+  cache_clear_all('oembedcore:providers', 'cache');
 }
 
 /**
