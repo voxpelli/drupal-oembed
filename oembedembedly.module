@@ -36,7 +36,7 @@ function oembedembedly_default_oembedcore_provider() {
     $json = $cache->data;
   }
   else {
-    $json = drupal_http_request('http://api.embed.ly/v1/api/services');
+    $json = drupal_http_request('http://api.embed.ly/1/services');
 
     if ($json->code == 200) {
       $json = json_decode($json->data);
@@ -58,7 +58,7 @@ function oembedembedly_default_oembedcore_provider() {
       $provider->disabled = !variable_get('oembedembedly_default', TRUE);
       $provider->name = 'oembedembedly_' . $embedly_provider->name;
       $provider->title = $embedly_provider->displayname . ' (Embed.ly)';
-      $provider->endpoint = 'http://api.embed.ly/v1/api/oembed';
+      $provider->endpoint = 'http://api.embed.ly/1/oembed';
       $provider->scheme = implode("\n", $embedly_provider->regex);
       $providers['oembedembedly_' . $embedly_provider->name] = $provider;
     }
