@@ -15,19 +15,19 @@ function oembedcore_perm() {
 
 /**
  * Implementation of hook_menu_alter().
+ *
+ * Instead of rewriting ctools export UI's hook_menu implementations, alter
+ * the callback items to have a common menu item.
  */
 function oembedcore_menu_alter(&$items) {
-  $item = $items['admin/build/oembed/preset'];
 
-  $items['admin/build/oembed'] = $item;
-  $items['admin/build/oembed']['title'] = 'OEmbed';
-  $items['admin/build/oembed']['description'] = 'Admin overview of OEmbed.';
+  // Create a new menu item where all oembed export UIs will be local tasks by
+  // copying the export UI's menu item that will become the default local task.
+  $items['admin/build/oembed'] = $items['admin/build/oembed/preset'];
+  $items['admin/build/oembed']['title'] = 'oEmbed';
+  $items['admin/build/oembed']['description'] = 'Admin overview of oEmbed.';
 
-  $items['admin/build/oembed/preset'] = array(
-    'title' => $item['title'],
-    'description' => $item['description'],
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-  );
+  $items['admin/build/oembed/preset']['type'] = MENU_DEFAULT_LOCAL_TASK;
   $items['admin/build/oembed/provider']['type'] = MENU_LOCAL_TASK;
 }
 
