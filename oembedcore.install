@@ -33,8 +33,7 @@ function _oembedcore_preset_schema_1() {
   return array(
     'export' => array(
       'identifier'            => 'preset',
-      'export callback'       => 'oembedcore_preset_export',
-      'list callback'         => 'oembedcore_preset_list',
+      'primary key'           => 'pid',
     ),
     'fields' => array(
       'pid' => array(
@@ -82,8 +81,7 @@ function _oembedcore_provider_schema_1() {
   return array(
     'export' => array(
       'identifier'      => 'provider',
-      'export callback' => 'oembedcore_provider_export',
-      'list callback'   => 'oembedcore_provider_list',
+      'primary key'     => 'pid',
     ),
     'fields' => array(
       'pid' => array(

@@ -14,115 +14,21 @@ function oembedcore_perm() {
 }
 
 /**
- * Implementation of hook_menu().
+ * Implementation of hook_menu_alter().
  */
-function oembedcore_menu() {
-  $items = array();
+function oembedcore_menu_alter(&$items) {
+  $item = $items['admin/build/oembed/preset'];
 
-  $base = array(
-    'access arguments' => array('administer oembed presets'),
-    'file'             => 'oembedcore.admin.inc',
-  );
-
-  $items['admin/build/oembed'] = array(
-    'title'          => 'OEmbed',
-    'description'    => 'Admin overview of OEmbed.',
-    'page callback'  => 'oembedcore_list_preset',
-  ) + $base;
+  $items['admin/build/oembed'] = $item;
+  $items['admin/build/oembed']['title'] = 'OEmbed';
+  $items['admin/build/oembed']['description'] = 'Admin overview of OEmbed.';
 
   $items['admin/build/oembed/preset'] = array(
-    'title'          => 'Presets',
-    'description'    => 'Add, edit and remove oembed preset from the system.',
-    'page callback'  => 'oembedcore_list_preset',
-    'type'           => MENU_DEFAULT_LOCAL_TASK,
-  ) + $base;
-  $items['admin/build/oembed/preset/list'] = array(
-    'title'          => 'List presets',
-    'page callback'  => 'oembedcore_list_preset',
-    'type'           => MENU_DEFAULT_LOCAL_TASK,
-    'weight'         => -10,
-  ) + $base;
-  $items['admin/build/oembed/preset/add'] = array(
-    'title'          => 'Add preset',
-    'page callback'  => 'oembedcore_add_preset',
-    'type'           => MENU_LOCAL_TASK,
-  ) + $base;
-  $items['admin/build/oembed/preset/%oembedcore_preset/edit'] = array(
-    'title'          => 'Edit preset',
-    'page callback'  => 'oembedcore_edit_preset',
-    'page arguments' => array(4),
-    'type'           => MENU_LOCAL_TASK,
-  ) + $base;
-  $items['admin/build/oembed/preset/%oembedcore_preset/export'] = array(
-    'title'          => 'Export preset',
-    'page callback'  => 'drupal_get_form',
-    'page arguments' => array('oembedcore_export_preset', 4),
-    'type'           => MENU_LOCAL_TASK,
-  ) + $base;
-  $items['admin/build/oembed/preset/%oembedcore_preset/delete'] = array(
-    'title'          => 'Delete preset',
-    'page callback'  => 'drupal_get_form',
-    'page arguments' => array('oembedcore_delete_confirm_preset', 4),
-    'type'           => MENU_CALLBACK,
-  ) + $base;
-  $items['admin/build/oembed/preset/%oembedcore_preset/disable'] = array(
-    'page callback'  => 'oembedcore_disable_preset',
-    'page arguments' => array(4),
-    'type'           => MENU_CALLBACK,
-  ) + $base;
-  $items['admin/build/oembed/preset/%oembedcore_preset/enable'] = array(
-    'page callback'  => 'oembedcore_enable_preset',
-    'page arguments' => array(4),
-    'type'           => MENU_CALLBACK,
-  ) + $base;
-
-  $items['admin/build/oembed/provider'] = array(
-    'title'          => 'Providers',
-    'description'    => 'Add, edit and remove oembed providers from the system.',
-    'page callback'  => 'oembedcore_list_provider',
-    'type'           => MENU_LOCAL_TASK,
-  ) + $base;
-  $items['admin/build/oembed/provider/list'] = array(
-    'title'          => 'List providers',
-    'page callback'  => 'oembedcore_list_provider',
-    'type'           => MENU_DEFAULT_LOCAL_TASK,
-    'weight'         => -10,
-  ) + $base;
-  $items['admin/build/oembed/provider/add'] = array(
-    'title'          => 'Add provider',
-    'page callback'  => 'oembedcore_add_provider',
-    'type'           => MENU_LOCAL_TASK,
-  ) + $base;
-  $items['admin/build/oembed/provider/%oembedcore_provider/edit'] = array(
-    'title'          => 'Edit provider',
-    'page callback'  => 'oembedcore_edit_provider',
-    'page arguments' => array(4),
-    'type'           => MENU_LOCAL_TASK,
-  ) + $base;
-  $items['admin/build/oembed/provider/%oembedcore_provider/export'] = array(
-    'title'          => 'Export provider',
-    'page callback'  => 'drupal_get_form',
-    'page arguments' => array('oembedcore_export_provider', 4),
-    'type'           => MENU_LOCAL_TASK,
-  ) + $base;
-  $items['admin/build/oembed/provider/%oembedcore_provider/delete'] = array(
-    'title'          => 'Delete provider',
-    'page callback'  => 'drupal_get_form',
-    'page arguments' => array('oembedcore_delete_confirm_provider', 4),
-    'type'           => MENU_CALLBACK,
-  ) + $base;
-  $items['admin/build/oembed/provider/%oembedcore_provider/disable'] = array(
-    'page callback'  => 'oembedcore_disable_provider',
-    'page arguments' => array(4),
-    'type'           => MENU_CALLBACK,
-  ) + $base;
-  $items['admin/build/oembed/provider/%oembedcore_provider/enable'] = array(
-    'page callback'  => 'oembedcore_enable_provider',
-    'page arguments' => array(4),
-    'type'           => MENU_CALLBACK,
-  ) + $base;
-
-  return $items;
+    'title' => $item['title'],
+    'description' => $item['description'],
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+  $items['admin/build/oembed/provider']['type'] = MENU_LOCAL_TASK;
 }
 
 /**
@@ -437,6 +343,15 @@ function oembedcore_form_system_modules_alter(&$form, $form_state) {
   //TODO: Extract this and move to oembedfield
   if (module_exists('content')) {
     content_clear_type_cache();
+  }
+}
+
+/**
+ * Implement hook_ctools_plugin_directory().
+ */
+function oembedcore_ctools_plugin_directory($module, $plugin) {
+  if ($module == 'ctools' && $plugin == 'export_ui') {
+    return 'plugins/' . $plugin;
   }
 }
 

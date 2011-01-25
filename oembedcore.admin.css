@@ -1,6 +1,0 @@
-/* $Id$ */
-
-#oembedcore-list-preset tr.oembedcore-preset-disabled,
-#oembedcore-list-providers tr.oembedcore-provider-disabled {
-  color: #999;
-}
