@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Default template file for oembed data of the rich type
